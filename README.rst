@@ -15,6 +15,13 @@ interruptible).  As such, the parser itself does not buffer any received data.
 It just forwards it to registered callbacks.  It requires little overhead and is
 well suited for being used in an object-oriented wrapper.
 
+Demonstration
+=============
+
+There's a full-blown WebSockets server based on `Qt`_ and the `http-parser`_
+library.  You can test the echo server with the echo client project which is
+implemented using the HTML 5 WebSocket API and jQuery_.
+
 Compiling
 =========
 
@@ -56,3 +63,6 @@ References
 
 .. _CMake: http://www.cmake.org/
 .. _NMake: http://msdn.microsoft.com/en-us/library/ms930369.aspx
+.. _`Qt`: http://qt.nokia.com/products/
+.. _jQuery: http://jquery.com/
+.. _`http-parser`: https://github.com/joyent/http-parser
