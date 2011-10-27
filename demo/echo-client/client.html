@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Qt web socket server test</title>
+    <script language="JavaScript" src="jquery-1.6.4.js"></script>
+  </head>
+  <body>
+    <div>
+      <input id="text" type="text"></input>
+      <input id="send" type="submit" value="Send"></input>
+      <ul id="messages"></ul>
+    </div>
+    <script language="javascript">
+      function show(message){
+        $('#messages').append('<li><p>'+message+'</p></li>');
+      }
+      function activate(message){
+        $('#text').attr("disabled", false);
+        $('#send').attr("disabled", false);
+      }
+      function disabled(message){
+        $('#text').attr("disabled", true);
+        $('#send').attr("disabled", true);
+      }
+      $(document).ready(function(){
+        var socket = new WebSocket("ws://localhost:80/");
+        show("connecting.");
+        socket.onopen = function(){
+          show("good!"); activate();
+        };
+        socket.onerror = function(reason){
+          show("fail ('"+reason+"').");
+          disabled();
+        };
+        socket.onclose = function(event){
+          show("died ('"+event.wasClean
+            +", "+event.code+", "+event.reason+"').");
+          disabled();
+        };
+        socket.onmessage = function(event){
+          show("message: '"+event.data+"'.");
+        };
+        $('#send').click(function(){
+          var message = $('#text').val()
+          show("send ('"+message+"').");
+          socket.send(message);
+          $('#text').val('');
+        });
+      })
+    </script>
+  </body>
+</html>
