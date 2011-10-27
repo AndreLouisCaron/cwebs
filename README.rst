@@ -54,11 +54,11 @@ CMake's documentation to know what the generator name is.  Examples include:
 References
 ==========
 
-* A nice resource page about WebSockets [1]_
-* The latest WebSocket draft speficiation [2]_
+* A nice `resource page about WebSockets`_
+* The `latest WebSocket draft specification`_
 
-.. [1] http://websocket.org/
-.. [2] http://tools.ietf.org/html/draft-ietf-hybi-thewebsocketprotocol
+.. _`resource page about WebSockets`: http://websocket.org/
+.. _`latest WebSocket draft specification`: http://tools.ietf.org/html/draft-ietf-hybi-thewebsocketprotocol
 
 
 .. _CMake: http://www.cmake.org/
