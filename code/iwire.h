@@ -15,6 +15,8 @@
 extern "C" {
 #endif
 
+struct ws_iwire;
+
 typedef uint64(*ws_iwire_state)
     (struct ws_iwire*,const uint8*,uint64);
 
@@ -67,3 +69,4 @@ int ws_iwire_dead ( const struct ws_iwire * stream );
 #endif
 
 #endif /* _iwire_h__ */
+

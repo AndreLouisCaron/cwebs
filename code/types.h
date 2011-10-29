@@ -12,3 +12,4 @@ typedef unsigned long long uint64;
 #define MIN(a,b) (((a) < (b))? (a) : (b))
 
 #endif /* _types_h__ */
+

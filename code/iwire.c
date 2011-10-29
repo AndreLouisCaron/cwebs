@@ -364,3 +364,4 @@ int ws_iwire_dead ( const struct ws_iwire * stream )
 {
     return (stream->code == 0x08);
 }
+
