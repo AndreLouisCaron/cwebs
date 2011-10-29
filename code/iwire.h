@@ -15,6 +15,8 @@
 extern "C" {
 #endif
 
+struct ws_iwire;
+
 typedef uint64(*ws_iwire_state)
     (struct ws_iwire*,const uint8*,uint64);
 
