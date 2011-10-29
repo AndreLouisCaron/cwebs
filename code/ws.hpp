@@ -32,7 +32,7 @@ namespace webs {
         /* construction. */
     public:
         /*!
-         * @brief 
+         * @brief
          */
         iwire ( std::ostream& output=std::cout )
             : myOutput(output)
@@ -207,3 +207,4 @@ namespace webs {
 }
 
 #endif /* _ws_hpp__ */
+
