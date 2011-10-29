@@ -67,3 +67,4 @@ int ws_iwire_dead ( const struct ws_iwire * stream );
 #endif
 
 #endif /* _iwire_h__ */
+
