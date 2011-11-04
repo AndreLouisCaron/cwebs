@@ -1,0 +1,6 @@
+[submodule "libs/httpxx"]
+	path = libs/httpxx
+	url = git://github.com/AndreLouisCaron/httpxx.git
+[submodule "libs/http-parser"]
+	path = libs/http-parser
+	url = git://github.com/joyent/http-parser.git
