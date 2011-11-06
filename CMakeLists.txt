@@ -31,7 +31,7 @@ if(${PROJECT_NAME} STREQUAL ${CMAKE_PROJECT_NAME})
   #   and pull standard output from the wire to let a controlling program
   #   tunnel any stream over WebSockets.
   add_executable(tunnel
-    demo/tunnel/tunnel.cpp
+    demo/nix/tunnel/tunnel.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/http-parser/http_parser.h
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/http-parser/http_parser.c
     ${httpxx_SOURCES}
