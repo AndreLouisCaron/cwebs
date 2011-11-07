@@ -59,26 +59,21 @@ namespace nix {
 
         int size () const
         {
-	  std::cout << "(nfds): " << (mySize+1) << std::endl;
             return (mySize+1);
         }
 
         void clear ()
         {
-	  std::cout << "(clear)" << std::endl;
             FD_ZERO(&myData);
         }
 
         bool contains ( int handle ) const
         {
-	  std::cout << "(contains? fd=" << handle << "): "
-		    << FD_ISSET(handle,&myData) << std::endl;
             return (FD_ISSET(handle, &myData));
         }
 
         WaitSet& add ( int handle )
         {
-	  std::cout << "(add fd=" << handle << ")" << std::endl;
             FD_SET(handle, &myData);
             mySize = MAX(mySize, handle);
             return (*this);
@@ -86,16 +81,12 @@ namespace nix {
 
         WaitSet& del ( int handle )
         {
-	  std::cout << "(del fd=" << handle << ")" << std::endl;
             FD_CLR(handle, &myData); return (*this);
         }
     };
 
     inline int waitfori ( WaitSet& pull )
     {
-        std::cout
-	    << "NFDS: '" << pull.size() << "'."
-	    << std::endl;
         const int status = ::select(pull.size(), &pull.data(), 0, 0, 0);
         if ( status == -1 ) {
             std::cerr << "Select!" << std::endl;

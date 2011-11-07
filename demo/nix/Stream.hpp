@@ -6,8 +6,6 @@
 #include "Error.hpp"
 #include "Listener.hpp"
 
-#include <string>
-
 namespace nix { namespace net {
 
     class Stream
@@ -64,7 +62,6 @@ namespace nix { namespace net {
             if ( status < 0 ) {
                 throw (Error(errno));
             }
-            std::cout << "got " << status << " bytes." << std::endl;
             return (status);
         }
 
@@ -89,7 +86,6 @@ namespace nix { namespace net {
             if ( status < 0 ) {
                 throw (Error(errno));
             }
-            std::cout << "put " << status << " bytes." << std::endl;
             return (status);
         }
 

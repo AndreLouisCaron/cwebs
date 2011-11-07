@@ -25,13 +25,11 @@ namespace {
 
     void tohost ( ::ws_iwire * stream, const void * data, uint64 size )
     {
-        //static_cast<nix::File*>(stream->baton)->putall(data, size);
         std::cout.write(static_cast<const char*>(data), size).flush();
     }
 
     void topeer ( ::ws_owire * stream, const void * data, uint64 size )
     {
-        std::cout << "sending " << size << " bytes." << std::endl;
         static_cast<nix::net::Stream*>(stream->baton)->putall(data, size);
     }
 
@@ -39,7 +37,7 @@ namespace {
     {
         static const std::string guid
             ("258EAFA5-E914-47DA-95CA-C5AB0DC85B11");
-	sha1::Digest digest;
+        sha1::Digest digest;
         digest.update(skey.data(), skey.size());
         digest.update(guid.data(), guid.size());
         return (digest.result());
@@ -53,7 +51,7 @@ namespace {
         do {
             used = peer.get(data, size);
             if ( used == 0 ) {
-                std::cout << "Peer has finished." << std::endl;
+                std::cerr << "Peer has finished." << std::endl;
                 break;
             }
             used -= request.feed(data, used);
@@ -62,24 +60,24 @@ namespace {
         
         // Make sure we succeeded.
         if (!request.complete()) {
-            std::cout << "Did not finish HTTP request." << std::endl;
+            std::cerr << "Did not finish HTTP request." << std::endl;
         }
         
         // Confirm handshake.
         if ((request.header("Connection") != "upgrade"  )||
             (request.header("Upgrade"   ) != "websocket"))
         {
-            std::cout << "Invalid upgrade request." << std::endl;
+            std::cerr << "Invalid upgrade request." << std::endl;
         }
         const std::string version = request.header("Sec-WebSocket-Version");
-	if (version != "13") {
-            std::cout << "Incompatible versions." << std::endl;
-	}
+        if (version != "13") {
+            std::cerr << "Incompatible versions." << std::endl;
+        }
         std::string nonce = request.header("Sec-WebSocket-Key");
-	if (nonce.empty()) {
-            std::cout << "Empty nonce." << std::endl;
-	}
-	std::string key = approve_nonce(nonce);
+        if (nonce.empty()) {
+            std::cerr << "Empty nonce." << std::endl;
+        }
+        std::string key = approve_nonce(nonce);
         
         // Send HTTP upgrade approval.
         std::ostringstream response;
@@ -127,21 +125,17 @@ try
         nix::WaitSet streams;
         streams.add(host.handle());
         streams.add(peer.handle());
-	const int ready = nix::waitfori(streams);
-	std::cout << ready << " streams are ready." << std::endl;
-      
+        const int ready = nix::waitfori(streams);
+        
         // Process host input.
         if (streams.contains(host.handle()))
         {
             const ssize_t size = host.get(data, sizeof(data));
-            std::cout << "Got " << size << " bytes from host." << std::endl;
             if ( size == 0 ) {
-                std::cout << "Host has finished." << std::endl;
                 ::ws_owire_put_kill(&owire, 0, 0);
                 peer.shutdowno();
                 running = false;
             }
-            //::ws_owire_feed(&owire, data, size);
             ::ws_owire_put_data(&owire, data, size);
         }
         
@@ -149,10 +143,8 @@ try
         if (streams.contains(peer.handle()))
         {
             const ssize_t size = peer.get(data, sizeof(data));
-            std::cout << "Got " << size << " bytes from peer." << std::endl;
             if ( size == 0 ) {
-                std::cout << "Peer has finished." << std::endl;
-		running = false;
+                running = false;
             }
             ::ws_iwire_feed(&iwire, data, size);
         }

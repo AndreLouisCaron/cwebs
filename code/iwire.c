@@ -7,8 +7,6 @@
  */
 
 #include "iwire.h"
-#include <iostream>
-#include <iomanip>
 
   //
   // List all parser states in advance.
@@ -33,7 +31,6 @@ static uint64 _ws_idle
     ( struct ws_iwire * stream, const uint8 * data, uint64 size )
 {
     // signal start of message.
-    std::cout << "((( +message. )))" << std::endl;
     stream->code = 0;
     if ( stream->new_message ) {
         stream->new_message(stream);
@@ -44,14 +41,12 @@ static uint64 _ws_idle
 
 static void _ws_done ( struct ws_iwire * stream )
 {
-    std::cout << "((( /fragment. )))" << std::endl;
     if ( stream->end_fragment ) {
         stream->end_fragment(stream);
     }
     stream->state = &_ws_wait;
     if ( stream->last )
     {
-        std::cout << "((( /message. )))" << std::endl;
         if ( stream->end_message ) {
 	    stream->end_message(stream);
 	}
@@ -91,7 +86,6 @@ static uint64 _ws_wait
         }
         // done.  look at fragment size.
         stream->state = &_ws_parse_size_1; break;
-        std::cout << "((( +fragment. )))" << std::endl;
     }
     return (used);
 }
@@ -331,17 +325,6 @@ uint64 _ws_iwire_feed
     ( struct ws_iwire * stream, const uint8 * data, uint64 size )
 {
     uint64 used = 0;
-    std::cout << std::hex;
-    for ( uint64 i = 0; (i < size); ++i )
-    {
-        std::cout
-            << "0x"
-            << std::setw(2)
-            << std::setfill('0')
-            << int(data[i])
-            << ' ';
-    }
-    std::cout << std::dec << std::endl;
     do {
         // Note: invoking the state handler might move the parser to a new
         //   state.  In the end, all data will be consumed by one state or
