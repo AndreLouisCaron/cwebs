@@ -33,20 +33,28 @@ static uint64 _ws_idle
     ( struct ws_iwire * stream, const uint8 * data, uint64 size )
 {
     // signal start of message.
-    std::cout << "((( start. )))" << std::endl;
+    std::cout << "((( +message. )))" << std::endl;
     stream->code = 0;
-    stream->new_message(stream);
+    if ( stream->new_message ) {
+        stream->new_message(stream);
+    }
     stream->state = &_ws_wait;
     return (0);
 }
 
 static void _ws_done ( struct ws_iwire * stream )
 {
-    stream->end_fragment(stream);
+    std::cout << "((( /fragment. )))" << std::endl;
+    if ( stream->end_fragment ) {
+        stream->end_fragment(stream);
+    }
     stream->state = &_ws_wait;
     if ( stream->last )
     {
-        stream->end_message(stream);
+        std::cout << "((( /message. )))" << std::endl;
+        if ( stream->end_message ) {
+	    stream->end_message(stream);
+	}
         stream->code = 0;
         stream->state = &_ws_idle;
     }
@@ -83,6 +91,7 @@ static uint64 _ws_wait
         }
         // done.  look at fragment size.
         stream->state = &_ws_parse_size_1; break;
+        std::cout << "((( +fragment. )))" << std::endl;
     }
     return (used);
 }
@@ -111,8 +120,11 @@ static uint64 _ws_parse_size_1
             stream->size = 0;
             stream->state = &_ws_parse_size_3; break;
         }
-        // commit size.
-        stream->new_fragment(stream, stream->pass=stream->data[0]);
+        // commit size.	
+	stream->pass = stream->data[0];
+	if ( stream->new_fragment ) {
+            stream->new_fragment(stream, stream->pass);
+        }
         stream->size = 0;
         // start parsing mask.
         stream->state = &_ws_parse_mask; break;
@@ -139,7 +151,10 @@ static uint64 _ws_parse_size_2
             const uint16 size =
                 (((uint16)stream->data[0] << 8)
                 |((uint16)stream->data[1] << 0));
-            stream->new_fragment(stream, stream->pass=size);
+            stream->pass = size;
+            if ( stream->new_fragment ) {
+                stream->new_fragment(stream, stream->pass);
+            }
             stream->size = 0;
             // start parsing mask.
             stream->state = &_ws_parse_mask; break;
@@ -175,7 +190,10 @@ static uint64 _ws_parse_size_3
                 |((uint64)stream->data[6] <<  8)
                 |((uint64)stream->data[7] <<  0));
             // notify start of fragment.
-            stream->new_fragment(stream, stream->pass=size);
+	    stream->pass = size;
+	    if ( stream->new_fragment ) {
+	        stream->new_fragment(stream, size);
+	    }
             stream->size = 0;
             // start parsing mask.
             stream->state = &_ws_parse_mask; break;

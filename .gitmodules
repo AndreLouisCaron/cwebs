@@ -4,3 +4,9 @@
 [submodule "libs/http-parser"]
 	path = libs/http-parser
 	url = git://github.com/joyent/http-parser.git
+[submodule "libs/cb64"]
+	path = libs/cb64
+	url = git://github.com/AndreLouisCaron/cb64.git
+[submodule "libs/csha1"]
+	path = libs/csha1
+	url = git://github.com/AndreLouisCaron/csha1.git
