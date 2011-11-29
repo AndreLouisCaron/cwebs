@@ -48,33 +48,36 @@ if(${PROJECT_NAME} STREQUAL ${CMAKE_PROJECT_NAME})
     ${sha1_SOURCES}
     ${sha1_HEADERS})
 
-  # Extra helpers for UNIX networking.
-  include_directories(${CMAKE_CURRENT_SOURCE_DIR}/demo/nix)
+  # Demo projects for UNIX-like platforms.
+  if(UNIX)
+    # Extra helpers for UNIX networking.
+    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/demo/nix)
 
-  # WebSocket transport application:
-  #   perform WebSocket handshake, then push standard input over the wire
-  #   and pull standard output from the wire to let a controlling program
-  #   tunnel any stream over WebSockets.
-  add_executable(client-tunnel
-    demo/nix/tunnel/client-tunnel.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/libs/http-parser/http_parser.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/libs/http-parser/http_parser.c
-    ${httpxx_SOURCES}
-    ${httpxx_HEADERS})
-  target_link_libraries(client-tunnel ${PROJECT_NAME} b64 sha1)
-  add_dependencies(client-tunnel ${PROJECT_NAME} b64 sha1)
+    # WebSocket transport application:
+    #   perform WebSocket handshake, then push standard input over the wire
+    #   and pull standard output from the wire to let a controlling program
+    #   tunnel any stream over WebSockets.
+    add_executable(client-tunnel
+      demo/nix/tunnel/client-tunnel.cpp
+      ${CMAKE_CURRENT_SOURCE_DIR}/libs/http-parser/http_parser.h
+      ${CMAKE_CURRENT_SOURCE_DIR}/libs/http-parser/http_parser.c
+      ${httpxx_SOURCES}
+      ${httpxx_HEADERS})
+    target_link_libraries(client-tunnel ${PROJECT_NAME} b64 sha1)
+    add_dependencies(client-tunnel ${PROJECT_NAME} b64 sha1)
 
-  # WebSocket transport application:
-  #   perform WebSocket handshake, then push standard input over the wire
-  #   and pull standard output from the wire to let a controlling program
-  #   tunnel any stream over WebSockets.
-  add_executable(server-tunnel
-    demo/nix/tunnel/server-tunnel.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/libs/http-parser/http_parser.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/libs/http-parser/http_parser.c
-    ${httpxx_SOURCES}
-    ${httpxx_HEADERS})
-  target_link_libraries(server-tunnel ${PROJECT_NAME} b64 sha1)
-  add_dependencies(server-tunnel ${PROJECT_NAME} b64 sha1)
+    # WebSocket transport application:
+    #   perform WebSocket handshake, then push standard input over the wire
+    #   and pull standard output from the wire to let a controlling program
+    #   tunnel any stream over WebSockets.
+    add_executable(server-tunnel
+      demo/nix/tunnel/server-tunnel.cpp
+      ${CMAKE_CURRENT_SOURCE_DIR}/libs/http-parser/http_parser.h
+      ${CMAKE_CURRENT_SOURCE_DIR}/libs/http-parser/http_parser.c
+      ${httpxx_SOURCES}
+      ${httpxx_HEADERS})
+    target_link_libraries(server-tunnel ${PROJECT_NAME} b64 sha1)
+    add_dependencies(server-tunnel ${PROJECT_NAME} b64 sha1)
+  endif()
 
 endif()
