@@ -6,21 +6,21 @@ cmake_minimum_required(VERSION 2.8)
 
 project(cwebs)
 
-file(GLOB ${PROJECT_NAME}_HEADERS code/*.h)
-file(GLOB ${PROJECT_NAME}_SOURCES code/*.c)
+file(GLOB ${PROJECT_NAME}_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/code/*.h)
+file(GLOB ${PROJECT_NAME}_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/code/*.c)
 set_source_files_properties(${${PROJECT_NAME}_SOURCES} PROPERTIES LANGUAGE CXX)
 add_library(${PROJECT_NAME} STATIC
     ${${PROJECT_NAME}_SOURCES}
     ${${PROJECT_NAME}_HEADERS})
 
 # Extract the files containing the macro "Q_OBJECT" from a file list.
-macro(find_moc_files output headers)
-  foreach(header ${headers})
+macro(qt4_find_moc output headers)
+  foreach(header ${${headers}})
     file(STRINGS ${header} matched REGEX "(.*)Q_OBJECT(.*)")
     list(LENGTH matched matches)
     if(${matches} GREATER 0)
       list(APPEND ${output} ${header})
-    endif(${matches} GREATER 0)
+    endif()
   endforeach()
 endmacro()
 
@@ -84,10 +84,9 @@ if(${PROJECT_NAME} STREQUAL ${CMAKE_PROJECT_NAME})
     file(GLOB qws-server_SOURCES
       ${CMAKE_CURRENT_SOURCE_DIR}/demo/all/qt-webs-server/*.c
       ${CMAKE_CURRENT_SOURCE_DIR}/demo/all/qt-webs-server/*.cpp)
-    find_moc_files(qws-server_MOC-HEADERS ${qws-server_HEADERS})
-    QT4_WRAP_CPP(qws-server_MOC-SOURCES ${qws-server_MOC-HEADERS})
-    message(STATUS ${qws-server_MOC-HEADERS})
-    message(STATUS ${qws-server_MOC-SOURCES})
+    list(LENGTH qws-server_HEADERS fuuu)
+    qt4_find_moc(qws-server_MOC-HEADERS qws-server_HEADERS)
+    qt4_wrap_cpp(qws-server_MOC-SOURCES ${qws-server_MOC-HEADERS})
     add_executable(qws-server
       ${qws-server_HEADERS}
       ${qws-server_SOURCES}
@@ -108,8 +107,8 @@ if(${PROJECT_NAME} STREQUAL ${CMAKE_PROJECT_NAME})
       ${CMAKE_CURRENT_SOURCE_DIR}/demo/nix/client-tunnel/*.h
       ${CMAKE_CURRENT_SOURCE_DIR}/demo/nix/client-tunnel/*.hpp)
     file(GLOB client-tunnel_SOURCES
-      ${CMAKE_CURRENT_SOURCE_DIR}/demo/all/client-tunnel/*.c
-      ${CMAKE_CURRENT_SOURCE_DIR}/demo/all/client-tunnel/*.cpp)
+      ${CMAKE_CURRENT_SOURCE_DIR}/demo/nix/client-tunnel/*.c
+      ${CMAKE_CURRENT_SOURCE_DIR}/demo/nix/client-tunnel/*.cpp)
     add_executable(client-tunnel
       ${client-tunnel_HEADERS} 
       ${client-tunnel_SOURCES})
@@ -124,8 +123,8 @@ if(${PROJECT_NAME} STREQUAL ${CMAKE_PROJECT_NAME})
       ${CMAKE_CURRENT_SOURCE_DIR}/demo/nix/server-tunnel/*.h
       ${CMAKE_CURRENT_SOURCE_DIR}/demo/nix/server-tunnel/*.hpp)
     file(GLOB server-tunnel_SOURCES
-      ${CMAKE_CURRENT_SOURCE_DIR}/demo/all/server-tunnel/*.c
-      ${CMAKE_CURRENT_SOURCE_DIR}/demo/all/server-tunnel/*.cpp)
+      ${CMAKE_CURRENT_SOURCE_DIR}/demo/nix/server-tunnel/*.c
+      ${CMAKE_CURRENT_SOURCE_DIR}/demo/nix/server-tunnel/*.cpp)
     add_executable(server-tunnel
       ${server-tunnel_HEADERS} 
       ${server-tunnel_SOURCES})
