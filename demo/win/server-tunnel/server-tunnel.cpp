@@ -127,15 +127,20 @@ try
     char data[1024];
     
     // Perform WebSocket handshake.
+    std::cout << "Starting hand-shake." << std::endl;
     ::ws_iwire_feed(&iwire, data,
         handshake(peer, data, sizeof(data)));
     
+    std::cout << "Hand-shake complete." << std::endl;
+    win::net::Event event;
+    peer.select(event, win::net::Event::get());
     for ( bool running = true; running; )
     {
         // Wait for input from either end.
         win::WaitSet streams;
         streams.add(host.handle());
-        streams.add(peer.handle());
+        streams.add(event.handle());
+        std::cout << "Waiting for input." << std::endl;
         const ::DWORD ready = win::any(streams);
 
         // Check for errors.
@@ -149,6 +154,7 @@ try
         if (ready == 0)
         {
             const ssize_t size = host.get(data, sizeof(data));
+            std::cout << "Got " << size << "bytes from host." << std::endl;
             if ( size == 0 ) {
                 ::ws_owire_put_kill(&owire, 0, 0);
                 peer.shutdowno();
@@ -160,11 +166,14 @@ try
         // Process peer input.
         if (ready == 1)
         {
+            const win::net::Events events(peer, event);
             const ssize_t size = peer.get(data, sizeof(data));
+            std::cout << "Got " << size << "bytes from peer." << std::endl;
             if ( size == 0 ) {
                 running = false;
             }
             ::ws_iwire_feed(&iwire, data, size);
+            peer.select(event, win::net::Event::get());
         }
     }
 }

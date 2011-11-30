@@ -109,6 +109,16 @@ namespace win { namespace net {
         return (myHandle);
     }
 
+    void Stream::select ( Event& event, const Event::Mask mask )
+    {
+        const int result = ::WSAEventSelect(handle(), event.handle(), mask);
+        if ( result == SOCKET_ERROR )
+        {
+            const int error = ::WSAGetLastError();
+            UNCHECKED_WIN32C_ERROR(WSAEventSelect, error);
+        }
+    }
+
     int Stream::get ( void * buffer, int length )
     {
         const int result = ::recv
