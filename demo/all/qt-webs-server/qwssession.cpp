@@ -8,6 +8,7 @@
 #include "qwssession.hpp"
 
 #include <algorithm>
+#include <locale>
 #include <sstream>
 
 #include <QDebug>
