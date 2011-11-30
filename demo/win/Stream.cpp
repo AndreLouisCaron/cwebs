@@ -12,9 +12,14 @@
  */
 
 #include "Stream.hpp"
+#include "Buffer.hpp"
 #include "Endpoint.hpp"
 #include "Error.hpp"
 #include "Listener.hpp"
+#include "Transfer.hpp"
+#include <mswsock.h>
+
+#include <iostream>
 
 namespace {
 
@@ -109,13 +114,41 @@ namespace win { namespace net {
         return (myHandle);
     }
 
-    void Stream::select ( Event& event, const Event::Mask mask )
+    void Stream::select ( Event& event, long mask )
     {
         const int result = ::WSAEventSelect(handle(), event.handle(), mask);
         if ( result == SOCKET_ERROR )
         {
             const int error = ::WSAGetLastError();
             UNCHECKED_WIN32C_ERROR(WSAEventSelect, error);
+        }
+        std::cout
+            << "WSAEventSelect("
+            << "SOCKET=" << handle()
+            << ",EVENT=" << event.handle()
+            << ",MASK=" << mask
+            << "): " << result
+            << std::endl;
+    }
+
+    void Stream::get ( Buffer& buffer, Transfer& transfer )
+    {
+        ::DWORD flags = 0;
+        const int result = ::WSARecv
+            (handle(), &buffer.data(), 1, 0, &flags, &transfer.data(), 0);
+        std::cout
+            << "WSARecv("
+            << "EVENT=" << transfer.data().hEvent
+            << ", DATA=0x" << (const void*)buffer.data().buf
+            << ",size=" << buffer.data().len
+            << "): " << result << std::endl;
+        if ( result == SOCKET_ERROR )
+        {
+            const int error = ::WSAGetLastError();
+            if ( error != WSA_IO_PENDING ) {
+                UNCHECKED_WIN32C_ERROR(WSARecv, error);
+            }
+            std::cout << "  ... I/O pending." << std::endl;
         }
     }
 
@@ -176,7 +209,7 @@ namespace win { namespace net {
         do {
             pass = put(data+used, size-used);
         }
-            while ((pass > 0) && ((used+=pass) < size));
+        while ((pass > 0) && ((used+=pass) < size));
     }
 
     void Stream::putall ( const std::string& message )

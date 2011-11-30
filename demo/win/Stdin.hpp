@@ -1,5 +1,5 @@
-#ifndef _win_Listener_hpp__
-#define _win_Listener_hpp__
+#ifndef _win_Stdin_hpp__
+#define _win_Stdin_hpp__
 
 // Copyright(c) 2011, Andre Caron (andre.l.caron@gmail.com)
 // All rights reserved.
@@ -10,23 +10,21 @@
 // at "http://www.opensource.org/licenses/BSD-3-Clause".
 
 /*!
- * @file demo/win/Listener.hpp
+ * @file demo/win/Stdin.hpp
  * @author Andre Caron (andre.l.caron@gmail.com)
  */
 
-#include "Event.hpp"
 #include <WinSock2.h>
 #include <Windows.h>
+#include <string>
 
-namespace win { namespace net {
+namespace win {
 
-    class Endpoint;
-
-    class Listener
+    class Stdin
     {
         /* nested types. */
     public:
-        typedef ::SOCKET Handle;
+        typedef ::HANDLE Handle;
 
         /* data. */
     private:
@@ -34,23 +32,27 @@ namespace win { namespace net {
 
         /* construction. */
     public:
-        Listener ( const Endpoint& host, int backlog=SOMAXCONN );
+        Stdin ();
 
     private:
-        Listener ( const Listener& );
+        Stdin ( const Stdin& );
 
     public:
-        ~Listener ();
+        ~Stdin ();
 
         /* methods. */
     public:
         const Handle handle () const;
 
+        ::DWORD get ( void * data, ::DWORD size );
+        void getall ( void * data, ::DWORD size );
+        void getall ( char * data, ::DWORD size );
+
         /* operators. */
     private:
-        Listener& operator= ( const Listener& );
+        Stdin& operator= ( const Stdin& );
     };
 
-} }
+}
 
-#endif /* _win_Listener_hpp__ */
+#endif /* _win_Stdin_hpp__ */

@@ -18,38 +18,13 @@
 
 namespace win { namespace net {
 
-    const Event::Mask Event::accept ()
-    {
-        return (FD_ACCEPT);
-    }
-
-    const Event::Mask Event::connect ()
-    {
-        return (FD_CONNECT);
-    }
-
-    const Event::Mask Event::close ()
-    {
-        return (FD_CLOSE);
-    }
-
-    const Event::Mask Event::get ()
-    {
-        return (FD_READ);
-    }
-
-    const Event::Mask Event::put ()
-    {
-        return (FD_WRITE);
-    }
-
-    Event::Event ( Mask mask )
+    Event::Event ()
         : myHandle(::WSACreateEvent())
     {
         if ( myHandle == 0 )
         {
             const int error = ::WSAGetLastError();
-            // ...
+            UNCHECKED_WIN32C_ERROR(WSACreateEvent, error);
         }
     }
 
@@ -63,34 +38,24 @@ namespace win { namespace net {
         return (myHandle);
     }
 
-    Events::Events ( Stream& socket, Event& event )
+    void Event::set ()
     {
-        ::ZeroMemory(&myData, sizeof(myData));
-        const int result =
-            ::WSAEnumNetworkEvents(socket.handle(), event.handle(), &myData);
-        if ( result == SOCKET_ERROR )
+        const ::BOOL result = ::WSASetEvent(handle());
+        if ( result == FALSE )
         {
             const int error = ::WSAGetLastError();
-            UNCHECKED_WIN32C_ERROR(WSAEnumNetworkEvents, error);
+            UNCHECKED_WIN32C_ERROR(WSASetEvent, error);
         }
     }
 
-    Events::Events ( Listener& socket, Event& event )
+    void Event::reset ()
     {
-        ::ZeroMemory(&myData, sizeof(myData));
-        const int result =
-            ::WSAEnumNetworkEvents(socket.handle(), event.handle(), &myData);
-        if ( result == SOCKET_ERROR )
+        const ::BOOL result = ::WSAResetEvent(handle());
+        if ( result == FALSE )
         {
             const int error = ::WSAGetLastError();
-            UNCHECKED_WIN32C_ERROR(WSAEnumNetworkEvents, error);
+            UNCHECKED_WIN32C_ERROR(WSAResetEvent, error);
         }
-    }
-
-    bool Events::contains ( Event::Mask mask ) const
-    {
-        return (((myData.lNetworkEvents & mask) != 0)
-            && (myData.iErrorCode[mask] == 0));
     }
 
 } }

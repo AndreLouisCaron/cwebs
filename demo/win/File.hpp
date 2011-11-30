@@ -1,5 +1,5 @@
-#ifndef _win_InputFile_hpp__
-#define _win_InputFile_hpp__
+#ifndef _win_File_hpp__
+#define _win_File_hpp__
 
 // Copyright(c) 2011, Andre Caron (andre.l.caron@gmail.com)
 // All rights reserved.
@@ -55,4 +55,4 @@ namespace win {
 
 }
 
-#endif /* _win_InputFile_hpp__ */
+#endif /* _win_File_hpp__ */

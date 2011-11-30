@@ -75,7 +75,7 @@ namespace win {
         do {
             pass = get(data+used, size-used);
         }
-            while ((pass > 0) && ((used+=pass) < size));
+        while ((pass > 0) && ((used+=pass) < size));
     }
 
 }

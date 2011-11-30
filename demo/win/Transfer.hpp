@@ -1,5 +1,5 @@
-#ifndef _win_Listener_hpp__
-#define _win_Listener_hpp__
+#ifndef _win_Transfer_hpp__
+#define _win_Transfer_hpp__
 
 // Copyright(c) 2011, Andre Caron (andre.l.caron@gmail.com)
 // All rights reserved.
@@ -10,47 +10,55 @@
 // at "http://www.opensource.org/licenses/BSD-3-Clause".
 
 /*!
- * @file demo/win/Listener.hpp
+ * @file demo/win/Transfer.hpp
  * @author Andre Caron (andre.l.caron@gmail.com)
  */
 
-#include "Event.hpp"
 #include <WinSock2.h>
 #include <Windows.h>
 
 namespace win { namespace net {
 
-    class Endpoint;
+    class Event;
+    class Stream;
 
-    class Listener
+    class Transfer
     {
         /* nested types. */
     public:
-        typedef ::SOCKET Handle;
+        typedef ::WSAOVERLAPPED Data;
 
         /* data. */
     private:
-        Handle myHandle;
+        Data myData;
 
         /* construction. */
     public:
-        Listener ( const Endpoint& host, int backlog=SOMAXCONN );
+        Transfer ( Event& event );
 
     private:
-        Listener ( const Listener& );
+        Transfer ( const Transfer& );
 
     public:
-        ~Listener ();
+        ~Transfer ();
 
         /* methods. */
     public:
-        const Handle handle () const;
+        Data& data ();
+
+        void reset ( Event& event );
+
+        void complete ( Stream& stream, ::DWORD& transferred );
+        void complete ( Stream& stream, ::DWORD& transferred, ::DWORD& status );
+
+        bool result ( Stream& stream, ::DWORD& transferred );
+        bool result ( Stream& stream, ::DWORD& transferred, ::DWORD& status );
 
         /* operators. */
     private:
-        Listener& operator= ( const Listener& );
+        Transfer& operator= ( const Transfer& );
     };
 
 } }
 
-#endif /* _win_Listener_hpp__ */
+#endif /* _win_Transfer_hpp__ */

@@ -1,5 +1,5 @@
-#ifndef _win_Listener_hpp__
-#define _win_Listener_hpp__
+#ifndef _win_Buffer_hpp__
+#define _win_Buffer_hpp__
 
 // Copyright(c) 2011, Andre Caron (andre.l.caron@gmail.com)
 // All rights reserved.
@@ -10,47 +10,34 @@
 // at "http://www.opensource.org/licenses/BSD-3-Clause".
 
 /*!
- * @file demo/win/Listener.hpp
+ * @file demo/win/Buffer.hpp
  * @author Andre Caron (andre.l.caron@gmail.com)
  */
 
-#include "Event.hpp"
 #include <WinSock2.h>
 #include <Windows.h>
 
 namespace win { namespace net {
 
-    class Endpoint;
-
-    class Listener
+    class Buffer
     {
         /* nested types. */
     public:
-        typedef ::SOCKET Handle;
+        typedef ::WSABUF Data;
 
         /* data. */
     private:
-        Handle myHandle;
+        Data myData;
 
         /* construction. */
     public:
-        Listener ( const Endpoint& host, int backlog=SOMAXCONN );
-
-    private:
-        Listener ( const Listener& );
-
-    public:
-        ~Listener ();
+        Buffer ( void * data, ::u_long size );
 
         /* methods. */
     public:
-        const Handle handle () const;
-
-        /* operators. */
-    private:
-        Listener& operator= ( const Listener& );
+        Data& data ();
     };
 
 } }
 
-#endif /* _win_Listener_hpp__ */
+#endif /* _win_Buffer_hpp__ */

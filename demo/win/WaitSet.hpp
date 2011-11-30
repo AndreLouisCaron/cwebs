@@ -50,11 +50,8 @@ namespace win {
         bool full () const { return (size() == capacity()); }
 
         WaitSet& add ( ::HANDLE value );
-        WaitSet& add ( ::SOCKET value );
         WaitSet& del ( ::HANDLE value );
-        WaitSet& del ( ::SOCKET value );
         bool contains ( ::HANDLE value ) const;
-        bool contains ( ::SOCKET value ) const;
 
     private:
         iterator begin () { return (myData); }
@@ -67,5 +64,53 @@ namespace win {
     ::DWORD all ( const WaitSet& set, ::DWORD timeout );
 
 }
+
+namespace win { namespace net {
+
+    class WaitSet
+    {
+        /* nested types. */
+    public:
+        typedef ::WSAEVENT * iterator;
+        typedef const ::WSAEVENT * const_iterator;
+
+        /* data. */
+    private:
+        ::WSAEVENT myData[MAXIMUM_WAIT_OBJECTS];
+        ::DWORD mySize;
+
+        /* construction. */
+    public:
+        WaitSet ();
+
+        /* methods. */
+    public:
+        static ::DWORD capacity ();
+
+        ::DWORD size () const;
+
+        const ::WSAEVENT * data () const;
+
+        const_iterator begin () const { return (myData); }
+        const_iterator end () const { return (begin()+size()); }
+
+        bool empty () const { return (size() == 0); }
+        bool full () const { return (size() == capacity()); }
+
+        WaitSet& add ( ::WSAEVENT value );
+        WaitSet& del ( ::WSAEVENT value );
+        bool contains ( ::WSAEVENT value ) const;
+
+    private:
+        iterator begin () { return (myData); }
+        iterator end () { return (begin()+size()); }
+    };
+
+    ::DWORD any ( const WaitSet& set );
+    ::DWORD any ( const WaitSet& set, ::DWORD timeout );
+    ::DWORD all ( const WaitSet& set );
+    ::DWORD all ( const WaitSet& set, ::DWORD timeout );
+
+} }
 
 #endif /* _win_WaitSet_hpp__ */

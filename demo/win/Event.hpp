@@ -26,17 +26,7 @@ namespace win { namespace net {
     {
         /* nested types. */
     public:
-        typedef long Mask;
         typedef ::WSAEVENT Handle;
-
-        /* values. */
-    public:
-        static const Mask accept ();
-        static const Mask connect ();
-        static const Mask close ();
-        static const Mask get ();
-        static const Mask put ();
-        static const Mask oob ();
 
         /* data. */
     private:
@@ -44,7 +34,7 @@ namespace win { namespace net {
 
         /* construction. */
     public:
-        Event ( Mask mask=0 );
+        Event ();
 
     private:
         Event ( const Event& );
@@ -56,31 +46,11 @@ namespace win { namespace net {
     public:
         const Handle handle () const;
 
+        void set ();
+        void reset ();
+
     private:
         Event& operator= ( const Event& );
-    };
-
-    class Events
-    {
-        /* nested types.*/
-    public:
-        typedef ::WSANETWORKEVENTS Data;
-
-        /* data. */
-    private:
-        Data myData;
-
-        /* construction. */
-    public:
-        Events ( Stream& socket, Event& event );
-        Events ( Listener& socket, Event& event );
-
-        /* methods. */
-    public:
-        Data& data ();
-        const Data& data () const;
-
-        bool contains ( Event::Mask mask ) const;
     };
 
 } }

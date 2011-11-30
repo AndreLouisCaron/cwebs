@@ -22,13 +22,15 @@
 #include "Digest.hpp"
 #include "b64.hpp"
 
-
+#include "win/Buffer.hpp"
 #include "win/Context.hpp"
 #include "win/Error.hpp"
 #include "win/Endpoint.hpp"
 #include "win/File.hpp"
 #include "win/Listener.hpp"
+#include "win/Stdin.hpp"
 #include "win/Stream.hpp"
+#include "win/Transfer.hpp"
 #include "win/WaitSet.hpp"
 
 namespace {
@@ -109,7 +111,8 @@ namespace {
 int main ( int argc, char ** argv )
 try
 {
-    win::File host("CONIN$");
+    //win::File host("CONIN$");
+    win::Stdin host;
     const win::net::Context context;
     win::net::Listener listener(
         win::net::Endpoint(127,0,0,1,8000));
@@ -124,56 +127,56 @@ try
     iwire.baton          = &host;
     iwire.accept_content = &::tohost;
     
-    char data[1024];
-    
+    char hdata[1024];
+    char pdata[1024];
+    win::net::Buffer pbuf(pdata, sizeof(pdata));
+
     // Perform WebSocket handshake.
     std::cout << "Starting hand-shake." << std::endl;
-    ::ws_iwire_feed(&iwire, data,
-        handshake(peer, data, sizeof(data)));
-    
+    ::ws_iwire_feed(&iwire, pdata,
+        handshake(peer, pdata, sizeof(pdata)));
+
     std::cout << "Hand-shake complete." << std::endl;
-    win::net::Event event;
-    peer.select(event, win::net::Event::get());
+    win::net::Event gate;
+    win::net::Transfer xfer(gate);
+    peer.get(pbuf, xfer);
     for ( bool running = true; running; )
     {
         // Wait for input from either end.
-        win::WaitSet streams;
+        win::net::WaitSet streams;
         streams.add(host.handle());
-        streams.add(event.handle());
+        streams.add(gate.handle());
         std::cout << "Waiting for input." << std::endl;
-        const ::DWORD ready = win::any(streams);
-
-        // Check for errors.
-        if (ready == win::WaitSet::capacity())
-        {
-            std::cerr << "Could not wait for handles!" << std::endl;
-            return (EXIT_FAILURE);
-        }
+        const ::DWORD ready = win::net::any(streams);
+        std::cout << "Ready! (handle #" << ready << ")" << std::endl;
 
         // Process host input.
         if (ready == 0)
         {
-            const ssize_t size = host.get(data, sizeof(data));
-            std::cout << "Got " << size << "bytes from host." << std::endl;
+            const int size = host.get(hdata, sizeof(hdata));
+            std::cout << "Got " << size << " bytes from host." << std::endl;
             if ( size == 0 ) {
                 ::ws_owire_put_kill(&owire, 0, 0);
                 peer.shutdowno();
                 running = false;
             }
-            ::ws_owire_put_data(&owire, data, size);
+            ::ws_owire_put_data(&owire, hdata, size);
         }
-        
+
         // Process peer input.
         if (ready == 1)
         {
-            const win::net::Events events(peer, event);
-            const ssize_t size = peer.get(data, sizeof(data));
-            std::cout << "Got " << size << "bytes from peer." << std::endl;
+            ::DWORD size = 0;
+            xfer.complete(peer, size);
+            std::cout << "Got " << size << " bytes from peer." << std::endl;
             if ( size == 0 ) {
                 running = false;
             }
-            ::ws_iwire_feed(&iwire, data, size);
-            peer.select(event, win::net::Event::get());
+            ::ws_iwire_feed(&iwire, pdata, size);
+            // Start a new transfer.
+            gate.reset();
+            xfer.reset(gate);
+            peer.get(pbuf, xfer);
         }
     }
 }

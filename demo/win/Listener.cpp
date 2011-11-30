@@ -19,7 +19,12 @@ namespace {
 
     ::SOCKET allocate ()
     {
+#if 0
         const ::SOCKET result = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+#else
+        const ::SOCKET result = ::WSASocket
+            (AF_INET, SOCK_STREAM, IPPROTO_TCP, 0, 0, WSA_FLAG_OVERLAPPED);
+#endif
         if ( result == INVALID_SOCKET )
         {
             const int error = ::WSAGetLastError();
@@ -64,16 +69,6 @@ namespace win { namespace net {
     const Listener::Handle Listener::handle () const
     {
         return (myHandle);
-    }
-
-    void Listener::select ( Event& event, const Event::Mask mask )
-    {
-        const int result = ::WSAEventSelect(handle(), event.handle(), mask);
-        if ( result == SOCKET_ERROR )
-        {
-            const int error = ::WSAGetLastError();
-            UNCHECKED_WIN32C_ERROR(WSAEventSelect, error);
-        }
     }
 
 } }
