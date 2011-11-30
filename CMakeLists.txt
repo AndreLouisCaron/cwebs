@@ -132,4 +132,45 @@ if(${PROJECT_NAME} STREQUAL ${CMAKE_PROJECT_NAME})
     add_dependencies(server-tunnel ${PROJECT_NAME} b64 sha1 httpxx)
   endif()
 
+  # Microsoft Windows-based demo projects.
+  if(WIN32)
+    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/demo)
+    add_definitions(-D_SCL_SECURE_NO_WARNINGS)
+
+    file(GLOB win_HEADERS
+      ${CMAKE_CURRENT_SOURCE_DIR}/demo/win/*.h
+      ${CMAKE_CURRENT_SOURCE_DIR}/demo/win/*.hpp)
+    file(GLOB win_SOURCES
+      ${CMAKE_CURRENT_SOURCE_DIR}/demo/win/*.c
+      ${CMAKE_CURRENT_SOURCE_DIR}/demo/win/*.cpp)
+
+    file(GLOB client-tunnel_HEADERS
+      ${CMAKE_CURRENT_SOURCE_DIR}/demo/win/client-tunnel/*.h
+      ${CMAKE_CURRENT_SOURCE_DIR}/demo/win/client-tunnel/*.hpp)
+    file(GLOB client-tunnel_SOURCES
+      ${CMAKE_CURRENT_SOURCE_DIR}/demo/win/client-tunnel/*.c
+      ${CMAKE_CURRENT_SOURCE_DIR}/demo/win/client-tunnel/*.cpp)
+    add_executable(client-tunnel
+      ${win_HEADERS}
+      ${win_SOURCES}
+      ${client-tunnel_HEADERS}
+      ${client-tunnel_SOURCES})
+    target_link_libraries(client-tunnel ${PROJECT_NAME} b64 sha1 httpxx ws2_32)
+    add_dependencies(client-tunnel ${PROJECT_NAME} b64 sha1 httpxx)
+
+    file(GLOB server-tunnel_HEADERS
+      ${CMAKE_CURRENT_SOURCE_DIR}/demo/win/server-tunnel/*.h
+      ${CMAKE_CURRENT_SOURCE_DIR}/demo/win/server-tunnel/*.hpp)
+    file(GLOB server-tunnel_SOURCES
+      ${CMAKE_CURRENT_SOURCE_DIR}/demo/win/server-tunnel/*.c
+      ${CMAKE_CURRENT_SOURCE_DIR}/demo/win/server-tunnel/*.cpp)
+    add_executable(server-tunnel
+      ${win_HEADERS}
+      ${win_SOURCES}
+      ${server-tunnel_HEADERS}
+      ${server-tunnel_SOURCES})
+    target_link_libraries(server-tunnel ${PROJECT_NAME} b64 sha1 httpxx ws2_32)
+    add_dependencies(server-tunnel ${PROJECT_NAME} b64 sha1 httpxx)
+  endif()
+
 endif()
