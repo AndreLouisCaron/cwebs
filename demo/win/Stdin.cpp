@@ -14,7 +14,6 @@
 #include "Stdin.hpp"
 #include "Error.hpp"
 #include "Transfer.hpp"
-#include <iostream>
 
 namespace win {
 
@@ -37,14 +36,6 @@ namespace win {
         ::DWORD read = 0;
         const ::BOOL result = ::ReadFile
             (handle(), data, size, 0, &transfer.data());
-        std::cout
-            << "ReadFile"
-            << "(handle=" << handle()
-            << ",data=" << (const void*)data
-            << ",size=" << size
-            << ",event=" << transfer.data().hEvent
-            << ")[async]: " << result << ", " << read
-            << std::endl;
         if ( result == 0 )
         {
             const ::DWORD error = ::GetLastError();

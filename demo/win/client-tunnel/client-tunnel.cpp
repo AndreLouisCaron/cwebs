@@ -31,7 +31,7 @@ try
     win::Stdin host;
     const win::net::Context context;
     win::net::Stream peer(
-        win::net::Endpoint(127,0,0,1,8000));
+        win::net::Endpoint(192,168,200,129,8000));
 
     // Perform tunnelled data exchange.
     win::Client(host, peer).exchange();

@@ -14,79 +14,40 @@
 #include "WaitSet.hpp"
 #include "Error.hpp"
 #include <algorithm>
-#include <iostream>
 
 namespace {
 
     ::DWORD wait
         ( const ::HANDLE * handles, ::DWORD count, ::BOOL all, ::DWORD timeout )
     {
-        std::cout << "Waiting for " << count << " handles ";
-        if (all) {
-            std::cout << "(all)";
-        }
-        else {
-            std::cout << "(any)";
-        }
-        std::cout << std::endl;
-        for ( ::DWORD i = 0; (i < count); ++i )
-        {
-            std::cout
-                << "  handle #" << i
-                << ": " << handles[i] << std::endl;
-        }
-        const ::DWORD result = ::WaitForMultipleObjects(
-            count, handles, all, timeout
-            );
-        std::cout << "WaitForMultipleObjects(): " << result << std::endl;
+        const ::DWORD result = ::WaitForMultipleObjects
+            (count, handles, all, timeout);
         if ( result == WAIT_FAILED )
         {
-            std::cout << " ... failed!" << std::endl;
             const ::DWORD error = ::GetLastError();
             UNCHECKED_WIN32C_ERROR(WaitForMultipleObjects, error);
         }
         if ( result == WAIT_TIMEOUT )
         {
-            std::cout << " ... timeout!" << std::endl;
             return (MAXIMUM_WAIT_OBJECTS);
         }
-        std::cout << " ... handle #" << (result-WAIT_OBJECT_0) << std::endl;
         return (result - WAIT_OBJECT_0);
     }
 
     ::DWORD wait ( const ::WSAEVENT * handles, ::DWORD count,
                    ::BOOL all, ::DWORD timeout, ::BOOL alertable )
     {
-        std::cout << "Waiting for " << count << " handles ";
-        if (all) {
-            std::cout << "(all)";
-        }
-        else {
-            std::cout << "(any)";
-        }
-        std::cout << std::endl;
-        for ( ::DWORD i = 0; (i < count); ++i )
-        {
-            std::cout
-                << "  handle #" << i
-                << ": " << handles[i] << std::endl;
-        }
-        const ::DWORD result = ::WSAWaitForMultipleEvents(
-            count, handles, all, timeout, alertable
-            );
-        std::cout << "WSAWaitForMultipleEvents(): " << result << std::endl;
+        const ::DWORD result = ::WSAWaitForMultipleEvents
+            (count, handles, all, timeout, alertable);
         if ( result == WAIT_FAILED )
         {
-            std::cout << " ... failed!" << std::endl;
             const ::DWORD error = ::GetLastError();
             UNCHECKED_WIN32C_ERROR(WSAWaitForMultipleEvents, error);
         }
         if ( result == WAIT_TIMEOUT )
         {
-            std::cout << " ... timeout!" << std::endl;
             return (MAXIMUM_WAIT_OBJECTS);
         }
-        std::cout << " ... handle #" << (result-WAIT_OBJECT_0) << std::endl;
         return (result - WAIT_OBJECT_0);
     }
 
@@ -116,8 +77,6 @@ namespace win {
 
     WaitSet& WaitSet::add ( ::HANDLE value )
     {
-        std::cout << "WaitSet::add(HANDLE=" << value << ")" << std::endl;
-            // Fixed capacity, sorry!
         if (size() < capacity())
         {
             if ( std::find(begin(), end(), value) == end() ) {
@@ -187,7 +146,6 @@ namespace win { namespace net {
 
     WaitSet& WaitSet::add ( ::WSAEVENT value )
     {
-        std::cout << "WaitSet::add(WSAEVENT=" << value << ")" << std::endl;
         if (size() < capacity())
         {
             if ( std::find(begin(), end(), value) == end() ) {
