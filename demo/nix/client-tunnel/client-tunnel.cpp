@@ -17,10 +17,15 @@
 int main ( int argc, char ** argv )
 try
 {
+    // Get the peer's name from the command line.
+    nix::net::Endpoint endpoint = nix::net::Endpoint::localhost(80);
+    if (argc >= 2) {
+        endpoint = nix::net::Endpoint::resolve(argv[1]);
+    }
+
     // Open both ends of the tunnel.
     nix::File host(STDIN_FILENO);
-    nix::net::Stream peer(
-        nix::net::Endpoint(127,0,0,1,8000));
+    nix::net::Stream peer(endpoint);
 
     // Perform tunnelled data exchange.
     nix::Client(host, peer).exchange();

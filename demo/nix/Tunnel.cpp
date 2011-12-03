@@ -57,6 +57,8 @@ namespace nix {
 
     void Tunnel::exchange ()
     {
+        handshake();
+
         char data[1024];
         bool halive = true;
         bool palive = true;
