@@ -81,10 +81,8 @@ namespace win {
         // Tunnel all host input through the connection.
         for ( int size = 0; ((size=myHost.get(data, sizeof(data))) > 0); )
         {
-            std::cout << "Got " << size << " bytes from host." << std::endl;
             ::ws_owire_put_data(&myOWire, data, size);
         }
-        std::cout << "Host input exhausted." << std::endl;
 
         // Let the peer know we won't be sending any more data.
         ::ws_owire_put_kill(&myOWire, 0, 0);
@@ -135,16 +133,11 @@ namespace win {
             {
                 ::DWORD size = 0;
                 xfer.complete(myPeer, size);
-                std::cout << "Got " << size << " bytes from peer." << std::endl;
                 if ( size == 0 ) {
                     palive = false;
                 }
                 ::ws_iwire_feed(&myIWire, data, size);
             }
-        }
-
-        if (palive) {
-            std::cout << "Peer still active." << std::endl;
         }
 
         while ( palive )
@@ -162,14 +155,12 @@ namespace win {
             // Process received data.
             ::DWORD size = 0;
             xfer.complete(myPeer, size);
-            std::cout << "Got " << size << " bytes from peer." << std::endl;
             if ( size == 0 ) {
                 palive = false;
             }
             ::ws_iwire_feed(&myIWire, data, size);
         }
 
-        std::cout << "Peer input exhausted." << std::endl;
         myPeer.shutdowni();
     }
 
