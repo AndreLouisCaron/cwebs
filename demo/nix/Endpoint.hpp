@@ -18,8 +18,17 @@ namespace nix { namespace net {
     private:
         ::sockaddr_in myData;
 
+        /* class methods. */
+    public:
+        static const Endpoint resolve ( const char * name );
+
+        static const Endpoint any ( uint16_t port );
+        static const Endpoint localhost ( uint16_t port );
+
         /* construction. */
     public:
+        Endpoint ( const ::sockaddr_in& data );
+
         Endpoint ( uint16_t port )
         {
             myData.sin_family = AF_INET;
