@@ -7,7 +7,7 @@
 // at "http://www.opensource.org/licenses/BSD-3-Clause".
 
 /*!
- * @file demo/win/server-tunnel/client-tunnel.cpp
+ * @file demo/win/server-tunnel/server-tunnel.cpp
  * @brief Simple program that pipes a websocket connection to a program.
  *
  * @author Andre Caron (andre.l.caron@gmail.com)
@@ -15,170 +15,28 @@
 
 #include <stdlib.h>
 #include <iostream>
-#include <sstream>
 
-#include "ws.hpp"
-#include "Request.hpp"
-#include "Digest.hpp"
-#include "b64.hpp"
-
-#include "win/Buffer.hpp"
 #include "win/Context.hpp"
 #include "win/Error.hpp"
 #include "win/Endpoint.hpp"
-#include "win/File.hpp"
 #include "win/Listener.hpp"
 #include "win/Stdin.hpp"
 #include "win/Stream.hpp"
-#include "win/Transfer.hpp"
-#include "win/WaitSet.hpp"
 
-namespace {
-
-    void tohost ( ::ws_iwire * stream, const void * data, uint64 size )
-    {
-        std::cout.write(static_cast<const char*>(data), size).flush();
-    }
-
-    void topeer ( ::ws_owire * stream, const void * data, uint64 size )
-    {
-        static_cast<win::net::Stream*>(stream->baton)->putall(data, size);
-    }
-
-    std::string approve_nonce ( const std::string& skey )
-    {
-        static const std::string guid
-            ("258EAFA5-E914-47DA-95CA-C5AB0DC85B11");
-        sha1::Digest digest;
-        digest.update(skey.data(), skey.size());
-        digest.update(guid.data(), guid.size());
-        return (digest.result());
-    }
-
-    std::size_t handshake
-        ( win::net::Stream& peer, char * data, std::size_t size )
-    {
-        http::Request request;
-        ::size_t used = 0;
-        do {
-            used = peer.get(data, size);
-            if ( used == 0 ) {
-                std::cerr << "Peer has finished." << std::endl;
-                break;
-            }
-            used -= request.feed(data, used);
-        }
-        while ( !request.complete() );
-        
-        // Make sure we succeeded.
-        if (!request.complete()) {
-            std::cerr << "Did not finish HTTP request." << std::endl;
-        }
-        
-        // Confirm handshake.
-        if ((request.header("Connection") != "upgrade"  )||
-            (request.header("Upgrade"   ) != "websocket"))
-        {
-            std::cerr << "Invalid upgrade request." << std::endl;
-        }
-        const std::string version = request.header("Sec-WebSocket-Version");
-        if (version != "13") {
-            std::cerr << "Incompatible versions." << std::endl;
-        }
-        std::string nonce = request.header("Sec-WebSocket-Key");
-        if (nonce.empty()) {
-            std::cerr << "Empty nonce." << std::endl;
-        }
-        std::string key = approve_nonce(nonce);
-        
-        // Send HTTP upgrade approval.
-        std::ostringstream response;
-        response
-            << "HTTP/1.1 101 Switching Protocols" << "\r\n"
-            << "Upgrade: websocket"               << "\r\n"
-            << "Connection: upgrade"              << "\r\n"
-            << "Sec-WebSocket-Accept: " << key    << "\r\n"
-            << "Sec-WebSocket-Version: 13"        << "\r\n"
-            << "\r\n";
-        peer.putall(response.str());
-        
-        // Keep any leftovers for the wire protocol.
-        return (used);
-    }
-
-}
+#include "win/Server.hpp"
 
 int main ( int argc, char ** argv )
 try
 {
-    //win::File host("CONIN$");
+    // Open both ends of the tunnel.
     win::Stdin host;
     const win::net::Context context;
     win::net::Listener listener(
         win::net::Endpoint(127,0,0,1,8000));
     win::net::Stream peer(listener);
-    
-    ::ws_owire owire;
-    ::ws_owire_init(&owire);
-    owire.baton          = &peer;
-    owire.accept_content = &::topeer;
-    ::ws_iwire iwire;
-    ::ws_iwire_init(&iwire);
-    iwire.baton          = &host;
-    iwire.accept_content = &::tohost;
-    
-    char hdata[1024];
-    char pdata[1024];
-    win::net::Buffer pbuf(pdata, sizeof(pdata));
 
-    // Perform WebSocket handshake.
-    std::cout << "Starting hand-shake." << std::endl;
-    ::ws_iwire_feed(&iwire, pdata,
-        handshake(peer, pdata, sizeof(pdata)));
-
-    std::cout << "Hand-shake complete." << std::endl;
-    win::net::Event gate;
-    win::net::Transfer xfer(gate);
-    peer.get(pbuf, xfer);
-    for ( bool running = true; running; )
-    {
-        // Wait for input from either end.
-        win::net::WaitSet streams;
-        streams.add(host.handle());
-        streams.add(gate.handle());
-        std::cout << "Waiting for input." << std::endl;
-        const ::DWORD ready = win::net::any(streams);
-        std::cout << "Ready! (handle #" << ready << ")" << std::endl;
-
-        // Process host input.
-        if (ready == 0)
-        {
-            const int size = host.get(hdata, sizeof(hdata));
-            std::cout << "Got " << size << " bytes from host." << std::endl;
-            if ( size == 0 ) {
-                ::ws_owire_put_kill(&owire, 0, 0);
-                peer.shutdowno();
-                running = false;
-            }
-            ::ws_owire_put_data(&owire, hdata, size);
-        }
-
-        // Process peer input.
-        if (ready == 1)
-        {
-            ::DWORD size = 0;
-            xfer.complete(peer, size);
-            std::cout << "Got " << size << " bytes from peer." << std::endl;
-            if ( size == 0 ) {
-                running = false;
-            }
-            ::ws_iwire_feed(&iwire, pdata, size);
-            // Start a new transfer.
-            gate.reset();
-            xfer.reset(gate);
-            peer.get(pbuf, xfer);
-        }
-    }
+    // Perform tunnelled data exchange.
+    win::Server(host, peer).exchange();
 }
 catch ( const win::Error& error )
 {

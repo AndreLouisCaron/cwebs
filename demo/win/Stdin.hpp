@@ -16,9 +16,10 @@
 
 #include <WinSock2.h>
 #include <Windows.h>
-#include <string>
 
 namespace win {
+
+    class Transfer;
 
     class Stdin
     {
@@ -44,6 +45,7 @@ namespace win {
     public:
         const Handle handle () const;
 
+        ::DWORD get ( void * data, ::DWORD size, Transfer& transfer );
         ::DWORD get ( void * data, ::DWORD size );
         void getall ( void * data, ::DWORD size );
         void getall ( char * data, ::DWORD size );

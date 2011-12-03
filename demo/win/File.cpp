@@ -13,13 +13,16 @@
 
 #include "File.hpp"
 #include "Error.hpp"
+#include "Transfer.hpp"
+#include <iostream>
 
 namespace {
 
     ::HANDLE open ( ::LPCSTR path, ::DWORD sharing, ::DWORD mode )
     {
+        const ::DWORD flags = FILE_FLAG_OVERLAPPED;
         const ::HANDLE handle = ::CreateFileA(
-            path, GENERIC_READ, sharing, 0, mode, 0, 0
+            path, GENERIC_READ, sharing, 0, mode, flags, 0
             );
         if ( handle == INVALID_HANDLE_VALUE ) {
             UNCHECKED_WIN32C_ERROR(CreateFile,::GetLastError());
@@ -48,6 +51,29 @@ namespace win {
     const File::Handle File::handle () const
     {
         return (myHandle);
+    }
+
+    ::DWORD File::get ( void * data, ::DWORD size, Transfer& transfer )
+    {
+        ::DWORD read = 0;
+        const ::BOOL result = ::ReadFile
+            (handle(), data, size, 0, &transfer.data());
+        std::cout
+            << "ReadFile"
+            << "(handle=" << handle()
+            << ",data=" << (const void*)data
+            << ",size=" << size
+            << ",event=" << transfer.data().hEvent
+            << ")[async]: " << result << ", " << read
+            << std::endl;
+        if ( result == 0 )
+        {
+            const ::DWORD error = ::GetLastError();
+            if ( error != ERROR_IO_PENDING ) {
+                UNCHECKED_WIN32C_ERROR(ReadFile, error);
+            }
+        }
+        return (read);
     }
 
     ::DWORD File::get ( void * data, ::DWORD size )

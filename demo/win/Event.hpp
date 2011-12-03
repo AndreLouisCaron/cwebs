@@ -17,10 +17,42 @@
 #include <WinSock2.h>
 #include <Windows.h>
 
-namespace win { namespace net {
+namespace win {
 
-    class Stream;
-    class Listener;
+    class Event
+    {
+        /* nested types. */
+    public:
+        typedef ::HANDLE Handle;
+
+        /* data. */
+    private:
+        Handle myHandle;
+
+        /* construction. */
+    public:
+        Event ();
+
+    private:
+        Event ( const Event& );
+
+    public:
+        ~Event ();
+
+        /* methods. */
+    public:
+        const Handle handle () const;
+
+        void set ();
+        void reset ();
+
+    private:
+        Event& operator= ( const Event& );
+    };
+
+}
+
+namespace win { namespace net {
 
     class Event
     {

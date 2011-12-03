@@ -17,6 +17,55 @@
 #include <WinSock2.h>
 #include <Windows.h>
 
+namespace win {
+
+    class Event;
+    class File;
+    class Stdin;
+
+    class Transfer
+    {
+        /* nested types. */
+    public:
+        typedef ::OVERLAPPED Data;
+
+        /* data. */
+    private:
+        Data myData;
+
+        /* construction. */
+    public:
+        Transfer ( Event& event );
+
+    private:
+        Transfer ( const Transfer& );
+
+    public:
+        ~Transfer ();
+
+        /* methods. */
+    public:
+        Data& data ();
+
+        void reset ( Event& event );
+
+        void complete ( File& stream, ::DWORD& transferred );
+        void complete ( File& stream, ::DWORD& transferred, ::DWORD& status );
+        void complete ( Stdin& stream, ::DWORD& transferred );
+        void complete ( Stdin& stream, ::DWORD& transferred, ::DWORD& status );
+
+        bool result ( File& stream, ::DWORD& transferred );
+        bool result ( File& stream, ::DWORD& transferred, ::DWORD& status );
+        bool result ( Stdin& stream, ::DWORD& transferred );
+        bool result ( Stdin& stream, ::DWORD& transferred, ::DWORD& status );
+
+        /* operators. */
+    private:
+        Transfer& operator= ( const Transfer& );
+    };
+
+}
+
 namespace win { namespace net {
 
     class Event;
