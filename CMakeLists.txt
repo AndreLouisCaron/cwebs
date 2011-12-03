@@ -97,7 +97,14 @@ if(${PROJECT_NAME} STREQUAL ${CMAKE_PROJECT_NAME})
 
   # UNIX-based demo projects.
   if(UNIX)
-    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/demo/nix)
+    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/demo)
+
+    file(GLOB nix_HEADERS
+      ${CMAKE_CURRENT_SOURCE_DIR}/demo/nix/*.h
+      ${CMAKE_CURRENT_SOURCE_DIR}/demo/nix/*.hpp)
+    file(GLOB nix_SOURCES
+      ${CMAKE_CURRENT_SOURCE_DIR}/demo/nix/*.c
+      ${CMAKE_CURRENT_SOURCE_DIR}/demo/nix/*.cpp)
 
     # WebSocket transport application:
     #   perform WebSocket handshake, then push standard input over the wire
@@ -110,6 +117,8 @@ if(${PROJECT_NAME} STREQUAL ${CMAKE_PROJECT_NAME})
       ${CMAKE_CURRENT_SOURCE_DIR}/demo/nix/client-tunnel/*.c
       ${CMAKE_CURRENT_SOURCE_DIR}/demo/nix/client-tunnel/*.cpp)
     add_executable(client-tunnel
+      ${nix_HEADERS}
+      ${nix_SOURCES}
       ${client-tunnel_HEADERS} 
       ${client-tunnel_SOURCES})
     target_link_libraries(client-tunnel ${PROJECT_NAME} b64 sha1 httpxx)
@@ -126,6 +135,8 @@ if(${PROJECT_NAME} STREQUAL ${CMAKE_PROJECT_NAME})
       ${CMAKE_CURRENT_SOURCE_DIR}/demo/nix/server-tunnel/*.c
       ${CMAKE_CURRENT_SOURCE_DIR}/demo/nix/server-tunnel/*.cpp)
     add_executable(server-tunnel
+      ${nix_HEADERS}
+      ${nix_SOURCES}
       ${server-tunnel_HEADERS} 
       ${server-tunnel_SOURCES})
     target_link_libraries(server-tunnel ${PROJECT_NAME} b64 sha1 httpxx)
