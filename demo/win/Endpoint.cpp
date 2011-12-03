@@ -14,7 +14,41 @@
 #include "Endpoint.hpp"
 #include "Error.hpp"
 
+#include <ws2tcpip.h>
+
 namespace win { namespace net {
+
+    const Endpoint Endpoint::resolve ( const char * name )
+    {
+        ::addrinfo hint; ::ZeroMemory(&hint, sizeof(hint));
+        hint.ai_family   = AF_INET;
+        hint.ai_socktype = SOCK_STREAM;
+        hint.ai_protocol = IPPROTO_TCP;
+        ::addrinfo * peer = 0;
+        const int result = ::getaddrinfo(name, "http", &hint, &peer);
+        if (result != 0) {
+            UNCHECKED_WIN32C_ERROR(getaddrinfo, result);
+        }
+        const win::net::Endpoint endpoint(
+            *reinterpret_cast<const ::sockaddr_in*>(peer->ai_addr));
+        ::freeaddrinfo(peer);
+        return (endpoint);
+    }
+
+    const Endpoint Endpoint::any ( uint16_t port )
+    {
+        ::sockaddr_in data;
+        ::ZeroMemory(&data, sizeof(data));
+        data.sin_family = AF_INET;
+        data.sin_addr.S_un.S_addr = INADDR_ANY;
+        data.sin_port = ::htons(port);
+        return (Endpoint(data));
+    }
+
+    const Endpoint Endpoint::localhost ( uint16_t port )
+    {
+        return (Endpoint(127,0,0,1,port));
+    }
 
     Endpoint::Endpoint ()
     {
@@ -22,10 +56,9 @@ namespace win { namespace net {
         myData.sin_family = AF_INET;
     }
 
-    Endpoint::Endpoint ( const Data& address )
+    Endpoint::Endpoint ( const Data& data )
     {
-        ::ZeroMemory(&myData, sizeof(myData));
-        myData.sin_family = AF_INET;
+        ::CopyMemory(&myData, &data, sizeof(myData));
     }
 
     Endpoint::Endpoint ( uint32_t address, uint16_t port )
@@ -36,7 +69,8 @@ namespace win { namespace net {
         myData.sin_port = ::htons(port);
     }
 
-    Endpoint::Endpoint ( uint8_t b1, uint8_t b2, uint8_t b3, uint8_t b4, uint16_t port )
+    Endpoint::Endpoint
+        ( uint8_t b1, uint8_t b2, uint8_t b3, uint8_t b4, uint16_t port )
     {
         ::ZeroMemory(&myData, sizeof(myData));
         myData.sin_family = AF_INET;

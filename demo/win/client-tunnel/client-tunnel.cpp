@@ -27,11 +27,17 @@
 int main ( int argc, char ** argv )
 try
 {
+    const win::net::Context context;
+
+    // Get the peer's name from the command line.
+    win::net::Endpoint endpoint = win::net::Endpoint::localhost(80);
+    if (argc >= 2) {
+        endpoint = win::net::Endpoint::resolve(argv[1]);
+    }
+
     // Open both ends of the tunnel.
     win::Stdin host;
-    const win::net::Context context;
-    win::net::Stream peer(
-        win::net::Endpoint(192,168,200,129,8000));
+    win::net::Stream peer(endpoint);
 
     // Perform tunnelled data exchange.
     win::Client(host, peer).exchange();
