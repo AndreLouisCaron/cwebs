@@ -29,6 +29,13 @@ namespace win { namespace net {
     public:
         typedef ::sockaddr_in Data;
 
+        /* class methods. */
+    public:
+        static const Endpoint Endpoint::resolve ( const char * name );
+
+        static const Endpoint any ( uint16_t port );
+        static const Endpoint localhost ( uint16_t port );
+
         /* data. */
     private:
         Data myData;
@@ -36,9 +43,10 @@ namespace win { namespace net {
         /* construction. */
     public:
         Endpoint ();
-        Endpoint ( const Data& address );
+        Endpoint ( const Data& data );
         Endpoint ( uint32_t address, uint16_t port );
-        Endpoint ( uint8_t b1, uint8_t b2, uint8_t b3, uint8_t b4, uint16_t port );
+        Endpoint
+            ( uint8_t b1, uint8_t b2, uint8_t b3, uint8_t b4, uint16_t port );
 
         Endpoint ( const Endpoint& other );
 
