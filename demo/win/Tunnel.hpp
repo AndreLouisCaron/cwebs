@@ -29,7 +29,6 @@ namespace win {
     protected:
         win::Stdin& myHost;
         win::net::Stream& myPeer;
-        win::Event myDone;
 
         ::ws_iwire myIWire;
         ::ws_owire myOWire;

@@ -87,10 +87,6 @@ namespace win {
         // Let the peer know we won't be sending any more data.
         ::ws_owire_put_kill(&myOWire, 0, 0);
         myPeer.shutdowno();
-
-        // Let the background thread know we're done and
-        // wait for interaction with the peer complete.
-        myDone.set();
     }
 
     void Tunnel::background ( void * context )
@@ -100,67 +96,16 @@ namespace win {
 
     void Tunnel::background ()
     {
-        bool halive = true;
-        bool palive = true;
-
-        // Tools for asynchronous tranfers.
+        // Tools for synchronous transfer.
         char data[1024];
-        win::net::Buffer pbuf(data, sizeof(data));
-        win::net::Event gate;
-        win::net::Transfer xfer(gate);
 
-        while ( halive && palive )
+        // Tunnel all host input through the connection.
+        for ( int size = 0; ((size=myPeer.get(data, sizeof(data))) > 0); )
         {
-            // Start an asynchronous transfer.
-            gate.reset();
-            xfer.reset(gate);
-            myPeer.get(pbuf, xfer);
-
-            // Expect either asynchronous transfer completion
-            // or notification that host input is exhausted.
-            win::net::WaitSet conditions;
-            conditions.add(myDone.handle());
-            conditions.add(  gate.handle());
-            const ::DWORD which = win::net::any(conditions);
-
-            // Host input exhausted.
-            if (which == 0) {
-                halive = false;
-            }
-
-            // Peer input received.
-            if (which == 1)
-            {
-                ::DWORD size = 0;
-                xfer.complete(myPeer, size);
-                if ( size == 0 ) {
-                    palive = false;
-                }
-                ::ws_iwire_feed(&myIWire, data, size);
-            }
-        }
-
-        while ( palive )
-        {
-            // Start an asynchronous transfer.
-            gate.reset();
-            xfer.reset(gate);
-            myPeer.get(pbuf, xfer);
-
-            // Wait for input from peer.
-            win::net::WaitSet conditions;
-            conditions.add(gate.handle());
-            const ::DWORD which = win::net::any(conditions);
-
-            // Process received data.
-            ::DWORD size = 0;
-            xfer.complete(myPeer, size);
-            if ( size == 0 ) {
-                palive = false;
-            }
             ::ws_iwire_feed(&myIWire, data, size);
         }
 
+        // Let peer know we're not expecting any more data.
         myPeer.shutdowni();
     }
 
