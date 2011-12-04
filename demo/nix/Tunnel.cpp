@@ -66,12 +66,12 @@ namespace nix {
         {
             // Wait for input from either end.
             nix::WaitSet streams;
-	    if (halive) {
+            if (halive) {
                 streams.add(myHost.handle());
-	    }
-	    if (palive) {
+            }
+            if (palive) {
                 streams.add(myPeer.handle());
-	    }
+            }
             nix::waitfori(streams);
 
             // Process host input.
@@ -83,7 +83,9 @@ namespace nix {
                     myPeer.shutdowno();
                     halive = false;
                 }
-                ::ws_owire_put_data(&myOWire, data, size);
+                else {
+                    ::ws_owire_put_data(&myOWire, data, size);
+                }
             }
 
             // Process peer input.
@@ -93,7 +95,9 @@ namespace nix {
                 if ( size == 0 ) {
                     palive = false;
                 }
-                ::ws_iwire_feed(&myIWire, data, size);
+                else {
+                    ::ws_iwire_feed(&myIWire, data, size);
+                }
             }
         }
     }
