@@ -15,6 +15,7 @@
  */
 
 #include "ws.hpp"
+#include "mt19937.h"
 #include "win/Event.hpp"
 #include "win/Stdin.hpp"
 #include "win/Stream.hpp"
@@ -26,6 +27,9 @@ namespace win {
     class Tunnel
     {
         /* data. */
+    private:
+        ::mt19937_prng myPrng;
+
     protected:
         win::Stdin& myHost;
         win::net::Stream& myPeer;
@@ -34,11 +38,12 @@ namespace win {
         ::ws_owire myOWire;
 
     protected:
-        Tunnel ( win::Stdin& host, win::net::Stream& peer );
+        Tunnel ( win::Stdin& host, win::net::Stream& peer, uint32_t salt=0 );
 
         /* methods. */
     protected:
         static std::string approve_nonce ( const std::string& key );
+        void generate_nonce ( void * data, size_t size );
 
         virtual void handshake () = 0;
 

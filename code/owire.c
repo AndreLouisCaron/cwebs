@@ -27,9 +27,8 @@ static void _ws_copy ( uint8 * lhs, const uint8 * rhs, uint8 size )
   //
 static void _ws_mask ( struct ws_owire * stream )
 {
-    if ( (stream->data[1]&0x80) != 0 )
-    {
-        stream->random_mask(stream, stream->data+10);
+    if ( (stream->data[1]&0x80) != 0 ) {
+        stream->rand(stream, stream->data+10);
     }
 }
 
@@ -183,7 +182,8 @@ static void ws_owire_put_full
 void ws_owire_init ( struct ws_owire * stream )
 {
     stream->accept_content = 0;
-    stream->random_mask = &_ws_unsafe_random_mask;
+    stream->prng = 0;
+    stream->rand = &_ws_unsafe_random_mask;
     stream->baton = 0;
     stream->auto_fragment = 0;
     stream->auto_mask = 0;

@@ -24,6 +24,8 @@ namespace win {
     Server::Server ( win::Stdin& host, win::net::Stream& peer )
         : Tunnel(host, peer)
     {
+        // Client *must* mask all frames.
+        //myIWire.reqm = 1;
     }
 
     void Server::handshake ()

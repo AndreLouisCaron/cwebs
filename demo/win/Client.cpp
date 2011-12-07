@@ -24,6 +24,8 @@ namespace win {
     Client::Client ( win::Stdin& host, win::net::Stream& peer )
         : Tunnel(host, peer)
     {
+        // Client *must* mask all frames.
+        myOWire.auto_mask = 1;
     }
 
     void Client::handshake ()
@@ -40,9 +42,7 @@ namespace win {
         std::string nonce(16, '\0');
         { 
             char random[16];
-            for ( int i =0 ; (i < 16); ++i) {
-                random[i] = ::rand() % 255;
-            }
+            generate_nonce(random, 16);
             nonce.assign(random, 16);
         }
         nonce = b64::encode(nonce);

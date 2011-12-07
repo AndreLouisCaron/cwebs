@@ -20,6 +20,8 @@
 
 #include "Digest.hpp"
 
+#include <ctime>
+
 namespace {
 
     void tohost ( ::ws_iwire * stream, const void * data, uint64 size )
@@ -32,11 +34,16 @@ namespace {
         static_cast<win::net::Stream*>(stream->baton)->putall(data, size);
     }
 
+    void _secure_random_mask ( struct ws_owire * stream, uint8 mask[4] )
+    {
+        ::mt19937_prng_grab(static_cast<::mt19937_prng*>(stream->prng), mask, 4);
+    }
+
 }
 
 namespace win {
 
-    Tunnel::Tunnel ( win::Stdin& host, win::net::Stream& peer )
+    Tunnel::Tunnel ( win::Stdin& host, win::net::Stream& peer, uint32_t salt )
         : myHost(host), myPeer(peer)
     {
         ::ws_iwire_init(&myIWire);
@@ -46,6 +53,11 @@ namespace win {
         ::ws_owire_init(&myOWire);
         myOWire.baton          = &myPeer;
         myOWire.accept_content = &topeer;
+
+        // Use a real pseudo-random number generator for masks and nonces.
+        ::mt19937_prng_init(&myPrng, uint32_t(::time(0)^salt));
+        myOWire.prng = &myPrng;
+        myOWire.rand = &::_secure_random_mask;
     }
 
     std::string Tunnel::approve_nonce ( const std::string& skey )
@@ -56,6 +68,11 @@ namespace win {
         digest.update(skey.data(), skey.size());
         digest.update(guid.data(), guid.size());
         return (digest.result());
+    }
+
+    void Tunnel::generate_nonce ( void * data, size_t size )
+    {
+        ::mt19937_prng_grab(&myPrng, data, size);
     }
 
     void Tunnel::exchange ()

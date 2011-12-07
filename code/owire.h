@@ -31,10 +31,11 @@ struct ws_owire
 {
     // event callbacks.
     void(*accept_content)(struct ws_owire*,const void*,uint64);
-    void(*random_mask)(struct ws_owire*,uint8 mask[4]);
+    void(*rand)(struct ws_owire*,uint8 mask[4]);
 
     // for use by callbacks.
     void * baton;
+    void * prng;
 
     // read-only fields.
     enum ws_owire_error error;
