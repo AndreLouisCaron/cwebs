@@ -142,7 +142,7 @@ namespace qws {
 
     void Session::consume ()
     {
-        if ( myState == Connecting )
+        if ( myState == Open )
         {
               // Read all available data and feed websocket parser.
             char data[1024];
@@ -154,7 +154,7 @@ namespace qws {
             while ( size > 0 );
         }
           // Complete web socket handshake.
-        else if ( myState == Open )
+        else if ( myState == Connecting )
         {
               // Read all available data and feed HTTP parser.
             char data[1024];
