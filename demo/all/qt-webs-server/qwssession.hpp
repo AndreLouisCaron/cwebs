@@ -158,6 +158,8 @@ namespace qws {
 
         /* signals. */
     signals:
+        void debug ( const QString& status );
+
         /*!
          * @brief HTTP request received, handshake in progress.
          *

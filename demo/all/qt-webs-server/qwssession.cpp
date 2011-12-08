@@ -42,11 +42,6 @@ namespace {
         return (std::string(result.data(), result.size()));
     }
 
-    void print ( const std::string& message )
-    {
-        qDebug() << message.c_str();
-    }
-
 }
 
 namespace qws {

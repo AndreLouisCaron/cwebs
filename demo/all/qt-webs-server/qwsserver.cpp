@@ -71,7 +71,16 @@ namespace qws {
         Session *const session = new Session(
             myServer.nextPendingConnection(), 0);
           // Get notified when client session ends.
-        QObject::connect(session, SIGNAL(destroyed()), this, SLOT(finished()));
+        QObject::connect(session, SIGNAL(destroyed(QObject*)),
+                         this, SLOT(finished(QObject*)));
+          // Get notified when client session updates its status.
+        QObject::connect(session, SIGNAL(debug(const QString&)),
+                         &myStatus, SLOT(setText(const QString&)));
+    }
+
+    void Server::finished ( QObject * object )
+    {
+        myStatus.setText(tr("Web socket server online!"));
     }
 
 }

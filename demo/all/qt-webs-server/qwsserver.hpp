@@ -34,13 +34,10 @@ namespace qws {
     private:
         void start ();
 
-        /* signals. */
-    signals:
-        void finished ( QObject * object=0 );
-
         /* slots. */
     private slots:
         void accept ();
+        void finished ( QObject * object=0 );
     };
 
 }
