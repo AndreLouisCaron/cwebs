@@ -19,42 +19,6 @@
 #include <QtGui>
 #include <QtNetwork>
 
-namespace {
-
-    class Lower {
-        std::locale myLocale;
-    public:
-        Lower ( const std::locale& locale=std::locale() )
-            : myLocale(locale)
-        {}
-        char operator() ( char x ) const {
-            return (std::tolower(x, myLocale));
-        }
-    };
-
-    const std::string lower ( std::string x ) {
-        std::transform(x.begin(), x.end(), x.begin(), Lower()); return (x);
-    }
-
-    // Refer to websocket specification for details.
-    const std::string accept_key ( const std::string& skey )
-    {
-        static const std::string guid
-            ("258EAFA5-E914-47DA-95CA-C5AB0DC85B11");
-        QCryptographicHash hash(QCryptographicHash::Sha1);
-        hash.addData(skey.data(), skey.size());
-        hash.addData(guid.data(), guid.size());
-        const QByteArray result = hash.result().toBase64();
-        return (std::string(result.data(), result.size()));
-    }
-
-    void print ( const std::string& message )
-    {
-        qDebug() << message.c_str();
-    }
-
-}
-
 namespace qws {
 
     Server::Server ( QWidget * parent )
