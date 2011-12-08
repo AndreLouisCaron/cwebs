@@ -58,7 +58,7 @@ namespace qws {
         }
         else
         {
-            QMessageBox::critical(this, tr("Fortune Server"),
+            QMessageBox::critical(this, tr("Qt / Web Socket Server"),
                 tr("Unable to start the server: %1.")
                 .arg(myServer.errorString()));
             close();
