@@ -177,9 +177,8 @@ namespace qws {
             // Check 'Origin' header.
             // Check 'Connection' header.
             if ( !myRequest.upgrade() ||
-                (myRequest.header("Upgrade") != "websocket"))
+                 (::lower(myRequest.header("Upgrade")) != "websocket"))
             {
-                print("Not an upgrade request!");
                 emit invalid();
                   // Fail the web socket connection.
                 shutdown();
