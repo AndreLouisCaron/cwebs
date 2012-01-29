@@ -15,7 +15,7 @@
 
 #include "b64.hpp"
 #include "Digest.hpp"
-#include "Request.hpp"
+#include "http.hpp"
 
 #include <sstream>
 
@@ -56,8 +56,8 @@ namespace win {
         }
         
         // Confirm handshake.
-        if ((request.header("Connection") != "upgrade"  )||
-            (request.header("Upgrade"   ) != "websocket"))
+        if (!http::ieq(request.header("Connection"),"Upgrade"  )||
+            !http::ieq(request.header("Upgrade"   ),"WebSocket"))
         {
             std::cerr << "Invalid upgrade request." << std::endl;
         }
@@ -75,8 +75,8 @@ namespace win {
         std::ostringstream response;
         response
             << "HTTP/1.1 101 Switching Protocols" << "\r\n"
-            << "Upgrade: websocket"               << "\r\n"
-            << "Connection: upgrade"              << "\r\n"
+            << "Upgrade: WebSocket"               << "\r\n"
+            << "Connection: Upgrade"              << "\r\n"
             << "Sec-WebSocket-Accept: " << key    << "\r\n"
             << "Sec-WebSocket-Version: 13"        << "\r\n"
             << "\r\n";

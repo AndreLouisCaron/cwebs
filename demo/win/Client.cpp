@@ -15,7 +15,7 @@
 
 #include "b64.hpp"
 #include "Digest.hpp"
-#include "Response.hpp"
+#include "http.hpp"
 
 #include <sstream>
 
@@ -52,8 +52,8 @@ namespace win {
         request
             << "GET / HTTP/1.1"               << "\r\n"
             << "Host: ..."                    << "\r\n"
-            << "Upgrade: websocket"           << "\r\n"
-            << "Connection: upgrade"          << "\r\n"
+            << "Upgrade: WebSocket"           << "\r\n"
+            << "Connection: Upgrade"          << "\r\n"
             << "Sec-WebSocket-Key: " << nonce << "\r\n"
             << "Sec-WebSocket-Version: 13"    << "\r\n"
             << "\r\n";
@@ -68,6 +68,7 @@ namespace win {
                 std::cerr << "Peer has finished." << std::endl;
                 break;
             }
+            std::cerr.write(data, used);
             used -= response.feed(data, used);
         }
         while ( !response.complete() );
@@ -78,8 +79,8 @@ namespace win {
         }
         
         // Confirm handshake.
-        if ((response.header("Connection") != "upgrade"  )||
-            (response.header("Upgrade"   ) != "websocket"))
+        if (!http::ieq(response.header("Connection"),"Upgrade"  )||
+            !http::ieq(response.header("Upgrade"   ),"WebSocket"))
         {
             std::cerr << "Upgrade request denied." << std::endl;
         }
