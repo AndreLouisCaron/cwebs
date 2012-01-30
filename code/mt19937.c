@@ -14,7 +14,6 @@
  */
 
 #include "mt19937.h"
-#include <stddef.h>
 
 static void _init ( uint32_t MT[] )
 {
