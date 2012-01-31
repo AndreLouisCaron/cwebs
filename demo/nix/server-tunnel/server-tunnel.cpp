@@ -20,8 +20,8 @@ try
 {
     // Get the peer's name from the command line.
     nix::net::Endpoint endpoint = nix::net::Endpoint::any(80);
-    if (argc >= 2) {
-        endpoint = nix::net::Endpoint::resolve(argv[1]);
+    if (argc >= 3) {
+        endpoint = nix::net::Endpoint::resolve(argv[1], argv[2]);
     }
 
     // Open both ends of the tunnel.

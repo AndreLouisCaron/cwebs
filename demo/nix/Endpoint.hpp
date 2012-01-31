@@ -20,7 +20,7 @@ namespace nix { namespace net {
 
         /* class methods. */
     public:
-        static const Endpoint resolve ( const char * name );
+        static const Endpoint resolve ( const char * name, const char * port );
 
         static const Endpoint any ( uint16_t port );
         static const Endpoint localhost ( uint16_t port );

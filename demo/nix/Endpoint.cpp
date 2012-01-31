@@ -11,14 +11,14 @@
 
 namespace nix { namespace net {
 
-    const Endpoint Endpoint::resolve ( const char * name )
+    const Endpoint Endpoint::resolve ( const char * name, const char * port )
     {
         ::addrinfo hint; ::memset(&hint, 0, sizeof(hint));
         hint.ai_family   = AF_INET;
         hint.ai_socktype = SOCK_STREAM;
         hint.ai_protocol = IPPROTO_TCP;
         ::addrinfo * peer = 0;
-        const int result = ::getaddrinfo(name, "http", &hint, &peer);
+        const int result = ::getaddrinfo(name, port, &hint, &peer);
         if (result != 0) {
             throw Error(result);
         }
