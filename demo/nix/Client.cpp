@@ -73,7 +73,7 @@ namespace nix {
         while ( !response.complete() );
 
         // Move leftover data at the beginning of the buffer.
-	std::copy(data+used, data+pass, data);
+        std::copy(data+used, data+pass, data);
         
         // Make sure we succeeded.
         if (!response.complete()) {
