@@ -16,7 +16,6 @@
 #include "Endpoint.hpp"
 #include "Error.hpp"
 #include "Listener.hpp"
-#include "Transfer.hpp"
 #include <mswsock.h>
 
 namespace {
@@ -119,20 +118,6 @@ namespace win { namespace net {
         {
             const int error = ::WSAGetLastError();
             UNCHECKED_WIN32C_ERROR(WSAEventSelect, error);
-        }
-    }
-
-    void Stream::get ( Buffer& buffer, Transfer& transfer )
-    {
-        ::DWORD flags = 0;
-        const int result = ::WSARecv
-            (handle(), &buffer.data(), 1, 0, &flags, &transfer.data(), 0);
-        if ( result == SOCKET_ERROR )
-        {
-            const int error = ::WSAGetLastError();
-            if ( error != WSA_IO_PENDING ) {
-                UNCHECKED_WIN32C_ERROR(WSARecv, error);
-            }
         }
     }
 

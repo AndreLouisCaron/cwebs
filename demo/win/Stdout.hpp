@@ -19,8 +19,6 @@
 
 namespace win {
 
-    class Transfer;
-
     class Stdout
     {
         /* nested types. */

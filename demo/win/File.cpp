@@ -13,7 +13,6 @@
 
 #include "File.hpp"
 #include "Error.hpp"
-#include "Transfer.hpp"
 
 namespace {
 
@@ -50,21 +49,6 @@ namespace win {
     const File::Handle File::handle () const
     {
         return (myHandle);
-    }
-
-    ::DWORD File::get ( void * data, ::DWORD size, Transfer& transfer )
-    {
-        ::DWORD read = 0;
-        const ::BOOL result = ::ReadFile
-            (handle(), data, size, 0, &transfer.data());
-        if ( result == 0 )
-        {
-            const ::DWORD error = ::GetLastError();
-            if ( error != ERROR_IO_PENDING ) {
-                UNCHECKED_WIN32C_ERROR(ReadFile, error);
-            }
-        }
-        return (read);
     }
 
     ::DWORD File::get ( void * data, ::DWORD size )

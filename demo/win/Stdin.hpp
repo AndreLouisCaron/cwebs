@@ -19,8 +19,6 @@
 
 namespace win {
 
-    class Transfer;
-
     class Stdin
     {
         /* nested types. */
@@ -45,7 +43,6 @@ namespace win {
     public:
         const Handle handle () const;
 
-        ::DWORD get ( void * data, ::DWORD size, Transfer& transfer );
         ::DWORD get ( void * data, ::DWORD size );
         void getall ( void * data, ::DWORD size );
         void getall ( char * data, ::DWORD size );

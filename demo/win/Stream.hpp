@@ -24,7 +24,6 @@ namespace win { namespace net {
     class Buffer;
     class Endpoint;
     class Listener;
-    class Transfer;
 
     class Stream
     {
@@ -55,12 +54,10 @@ namespace win { namespace net {
 
         void select ( Event& event, long mask );
 
-        void get ( Buffer& buffer, Transfer& transfer );
         int get ( void * data, int size );
         void getall ( void * data, int size );
         void getall ( char * data, int size );
  
-        void put ( const void * data, int size, Transfer& transfer );
         int put ( const void * data, int size );
         void putall ( const void * data, int size );
         void putall ( const char * data, int size );

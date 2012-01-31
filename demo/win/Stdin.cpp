@@ -13,7 +13,6 @@
 
 #include "Stdin.hpp"
 #include "Error.hpp"
-#include "Transfer.hpp"
 
 namespace win {
 
@@ -29,21 +28,6 @@ namespace win {
     const Stdin::Handle Stdin::handle () const
     {
         return (myHandle);
-    }
-
-    ::DWORD Stdin::get ( void * data, ::DWORD size, Transfer& transfer )
-    {
-        ::DWORD read = 0;
-        const ::BOOL result = ::ReadFile
-            (handle(), data, size, 0, &transfer.data());
-        if ( result == 0 )
-        {
-            const ::DWORD error = ::GetLastError();
-            if ( error != ERROR_IO_PENDING ) {
-                UNCHECKED_WIN32C_ERROR(ReadFile, error);
-            }
-        }
-        return (read);
     }
 
     ::DWORD Stdin::get ( void * data, ::DWORD size )

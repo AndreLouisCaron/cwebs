@@ -15,7 +15,6 @@
 
 #include "win/Buffer.hpp"
 #include "win/Thread.hpp"
-#include "win/Transfer.hpp"
 #include "win/WaitSet.hpp"
 
 #include "Digest.hpp"
