@@ -2,17 +2,23 @@
 
 # A few C++ wrappers to shrink-wrap demo program to its simplest expression.
 file(GLOB nix_headers
-  ${CMAKE_CURRENT_SOURCE_DIR}*.h
-  ${CMAKE_CURRENT_SOURCE_DIR}*.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/*.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/*.hpp
 )
 file(GLOB nix_sources
-  ${CMAKE_CURRENT_SOURCE_DIR}*.c
-  ${CMAKE_CURRENT_SOURCE_DIR}*.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/*.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
 )
 add_library(nix
   STATIC
   ${nix_headers}
   ${nix_sources}
+)
+target_link_libraries(nix
+  webs
+  ${cb64_libraries}
+  ${csha1_libraries}
+  ${httpxx_libraries}
 )
 
 # WebSocket transport application:
@@ -29,8 +35,8 @@ add_executable(client-tunnel
   ${client-tunnel_headers} 
   ${client-tunnel_sources}
 )
-target_link_libraries(client-tunnel webs b64 sha1 httpxx nix)
-add_dependencies(client-tunnel webs b64 sha1 httpxx nix)
+target_link_libraries(client-tunnel nix)
+add_dependencies(client-tunnel nix)
 
 # WebSocket transport application:
 #   perform WebSocket handshake, then push standard input over the wire
@@ -46,5 +52,5 @@ add_executable(server-tunnel
   ${server-tunnel_headers} 
   ${server-tunnel_sources}
 )
-target_link_libraries(server-tunnel webs b64 sha1 httpxx nix)
-add_dependencies(server-tunnel webs b64 sha1 httpxx nix)
+target_link_libraries(server-tunnel nix)
+add_dependencies(server-tunnel nix)
