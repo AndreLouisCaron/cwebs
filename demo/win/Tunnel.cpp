@@ -24,19 +24,10 @@
 
 namespace {
 
-    void tohost ( ::ws_iwire * stream, const void * data, uint64 size )
-    {
-        std::cout.write(static_cast<const char*>(data), size).flush();
-    }
-
-    void topeer ( ::ws_owire * stream, const void * data, uint64 size )
-    {
-        static_cast<win::net::Stream*>(stream->baton)->putall(data, size);
-    }
-
     void _secure_random_mask ( struct ws_owire * stream, uint8 mask[4] )
     {
-        ::mt19937_prng_grab(static_cast<::mt19937_prng*>(stream->prng), mask, 4);
+        ::mt19937_prng_grab
+            (static_cast<::mt19937_prng*>(stream->prng), mask, 4);
     }
 
 }
@@ -44,14 +35,14 @@ namespace {
 namespace win {
 
     Tunnel::Tunnel ( win::Stdin& host, win::net::Stream& peer, uint32_t salt )
-        : myHost(host), myPeer(peer)
+        : myHostI(host), myPeer(peer)
     {
         ::ws_iwire_init(&myIWire);
-        myIWire.baton          = &myHost;
+        myIWire.baton          = this;
         myIWire.accept_content = &tohost;
 
         ::ws_owire_init(&myOWire);
-        myOWire.baton          = &myPeer;
+        myOWire.baton          = this;
         myOWire.accept_content = &topeer;
 
         // Use a real pseudo-random number generator for masks and nonces.
@@ -96,7 +87,7 @@ namespace win {
         char data[1024];
 
         // Tunnel all host input through the connection.
-        for ( int size = 0; ((size=myHost.get(data, sizeof(data))) > 0); )
+        for ( int size = 0; ((size=myHostI.get(data, sizeof(data))) > 0); )
         {
             ::ws_owire_put_data(&myOWire, data, size);
         }
@@ -124,6 +115,19 @@ namespace win {
 
         // Let peer know we're not expecting any more data.
         myPeer.shutdowni();
+    }
+
+    void Tunnel::tohost ( ::ws_iwire * stream, const void * data, uint64 size )
+    {
+        Tunnel& tunnel = *static_cast<Tunnel*>(stream->baton);
+        tunnel.myHostO.putall(data, size);
+        tunnel.myHostO.flush();
+    }
+
+    void Tunnel::topeer ( ::ws_owire * stream, const void * data, uint64 size )
+    {
+        Tunnel& tunnel = *static_cast<Tunnel*>(stream->baton);
+        tunnel.myPeer.putall(data, size);
     }
 
 }

@@ -18,6 +18,7 @@
 #include "mt19937.h"
 #include "win/Event.hpp"
 #include "win/Stdin.hpp"
+#include "win/Stdout.hpp"
 #include "win/Stream.hpp"
 
 #include <string>
@@ -31,7 +32,8 @@ namespace win {
         ::mt19937_prng myPrng;
 
     protected:
-        win::Stdin& myHost;
+        win::Stdout myHostO;
+        win::Stdin& myHostI;
         win::net::Stream& myPeer;
 
         ::ws_iwire myIWire;
@@ -55,6 +57,11 @@ namespace win {
         void background ();
 
         static void background ( void * context );
+
+        static void tohost
+            ( ::ws_iwire * stream, const void * data, uint64 size );
+        static void topeer
+            ( ::ws_owire * stream, const void * data, uint64 size );
     };
 
 }
