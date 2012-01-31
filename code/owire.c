@@ -219,21 +219,21 @@ void ws_owire_new_frame ( struct ws_owire * stream, uint64 size )
     {
         stream->data[1] &= 0x7f;
         stream->data[1] |= 126;
-        stream->data[2] = ((size >> 0) & 0xff);
-        stream->data[3] = ((size >> 8) & 0xff);
+        stream->data[2] = ((size >> 8) & 0xff);
+        stream->data[3] = ((size >> 0) & 0xff);
     }
     else
     {
         stream->data[1] &= 0x7f;
         stream->data[1] |= 127;
-        stream->data[2] = ((size >>  0) & 0xff);
-        stream->data[3] = ((size >>  8) & 0xff);
-        stream->data[4] = ((size >> 16) & 0xff);
-        stream->data[5] = ((size >> 24) & 0xff);
-        stream->data[6] = ((size >> 32) & 0xff);
-        stream->data[7] = ((size >> 40) & 0xff);
-        stream->data[8] = ((size >> 48) & 0xff);
-        stream->data[9] = ((size >> 56) & 0xff);
+        stream->data[2] = ((size >> 56) & 0xff);
+        stream->data[3] = ((size >> 48) & 0xff);
+        stream->data[4] = ((size >> 40) & 0xff);
+        stream->data[5] = ((size >> 32) & 0xff);
+        stream->data[6] = ((size >> 24) & 0xff);
+        stream->data[7] = ((size >> 16) & 0xff);
+        stream->data[8] = ((size >>  8) & 0xff);
+        stream->data[9] = ((size >>  0) & 0xff);
     }
 }
 
