@@ -61,15 +61,19 @@ namespace nix {
         // Wait for upgrade approval.
         http::Response response;
         ::size_t used = 0;
+        ::size_t pass = 0;
         do {
-            used = peer.get(data, size);
-            if ( used == 0 ) {
+            pass = peer.get(data, size);
+            if ( pass == 0 ) {
                 std::cerr << "Peer has finished." << std::endl;
                 break;
             }
-            used -= response.feed(data, used);
+            used = response.feed(data, pass);
         }
         while ( !response.complete() );
+
+        // Move leftover data at the beginning of the buffer.
+	std::copy(data+used, data+pass, data);
         
         // Make sure we succeeded.
         if (!response.complete()) {
@@ -87,9 +91,9 @@ namespace nix {
         if (key != approve_nonce(nonce)) {
             std::cerr << "Invalid nonce reply." << std::endl;
         }
-        
+
         // Keep any leftovers for the wire protocol.
-        return (used);
+        return (pass-used);
     }
 
 }
