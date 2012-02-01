@@ -14,7 +14,7 @@
  * @author Andre Caron (andre.l.caron@gmail.com)
  */
 
-#include "ws.hpp"
+#include "webs.h"
 #include "mt19937.h"
 #include "win/Event.hpp"
 #include "win/Stdin.hpp"
