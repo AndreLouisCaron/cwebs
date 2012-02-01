@@ -66,7 +66,7 @@ namespace win {
             const ::DWORD error = ::GetLastError();
             // Console device can't be flushed.  Don't
             // crash if the device is not a regular file.
-            if (result != ERROR_INVALID_HANDLE) {
+            if (error != ERROR_INVALID_HANDLE) {
                 UNCHECKED_WIN32C_ERROR(FlushFileBuffers, error);
             }
         }
