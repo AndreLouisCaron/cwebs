@@ -33,7 +33,8 @@
  */
 
 #include <sys/select.h>
-#include <string.h>
+#include <cstring>
+#include <iostream>
 
 #define MAX(a,b) (((a)>(b))?(a):(b))
 

@@ -36,6 +36,7 @@
 #include "Digest.hpp"
 #include "http.hpp"
 
+#include <iostream>
 #include <sstream>
 
 namespace nix {

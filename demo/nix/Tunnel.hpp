@@ -32,7 +32,7 @@
  * @file demo/nix/Tunnel.hpp
  */
 
-#include "ws.hpp"
+#include "webs.h"
 #include "nix/File.hpp"
 #include "nix/Stream.hpp"
 
