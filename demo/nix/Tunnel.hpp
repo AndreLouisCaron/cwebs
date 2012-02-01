@@ -39,10 +39,10 @@ namespace nix {
     protected:
         static std::string approve_nonce ( const std::string& key );
 
-        virtual void handshake () = 0;
+        virtual void handshake ( const std::string& host ) = 0;
 
     public:
-        void exchange ();
+        void exchange ( const std::string& host );
 
     private:
         void foreground ();

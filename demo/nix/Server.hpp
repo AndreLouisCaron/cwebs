@@ -28,11 +28,11 @@ namespace nix {
         /* methods. */
     private:
         std::size_t handshake
-            ( nix::net::Stream& peer, char * data, std::size_t size );
+            ( const std::string& host, char * data, std::size_t size );
 
         /* overrides. */
     protected:
-        virtual void handshake ();
+        virtual void handshake ( const std::string& );
     };
 
 }

@@ -26,20 +26,20 @@ namespace nix {
     {
     }
 
-    void Server::handshake ()
+    void Server::handshake ( const std::string& host )
     {
         char data[1024];
         ::ws_iwire_feed(&myIWire, data,
-            handshake(myPeer, data, sizeof(data)));
+            handshake(host, data, sizeof(data)));
     }
 
     std::size_t Server::handshake
-        ( nix::net::Stream& peer, char * data, std::size_t size )
+        ( const std::string& host, char * data, std::size_t size )
     {
         http::Request request;
         ::size_t used = 0;
         do {
-            used = peer.get(data, size);
+            used = myPeer.get(data, size);
             if ( used == 0 ) {
                 std::cerr << "Peer has finished." << std::endl;
                 break;
@@ -78,7 +78,7 @@ namespace nix {
             << "Sec-WebSocket-Accept: " << key    << "\r\n"
             << "Sec-WebSocket-Version: 13"        << "\r\n"
             << "\r\n";
-        peer.putall(response.str());
+        myPeer.putall(response.str());
         
         // Keep any leftovers for the wire protocol.
         return (used);

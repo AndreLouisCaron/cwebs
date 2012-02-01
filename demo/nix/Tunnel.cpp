@@ -55,9 +55,9 @@ namespace nix {
         return (digest.result());
     }
 
-    void Tunnel::exchange ()
+    void Tunnel::exchange ( const std::string& host )
     {
-        handshake();
+        handshake(host);
 
         char data[1024];
         bool halive = true;

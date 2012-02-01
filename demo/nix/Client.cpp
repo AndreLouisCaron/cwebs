@@ -26,15 +26,15 @@ namespace nix {
     {
     }
 
-    void Client::handshake ()
+    void Client::handshake ( const std::string& host )
     {
         char data[1024];
         ::ws_iwire_feed(&myIWire, data,
-            handshake(myPeer, data, sizeof(data)));
+            handshake(host, data, sizeof(data)));
     }
 
     std::size_t Client::handshake
-        ( nix::net::Stream& peer, char * data, std::size_t size )
+        ( const std::string& host, char * data, std::size_t size )
     {
         // Generate a nonce.
         std::string nonce(16, '\0');
@@ -50,20 +50,20 @@ namespace nix {
         std::ostringstream request;
         request
             << "GET / HTTP/1.1"               << "\r\n"
-            << "Host: ..."                    << "\r\n"
+            << "Host: " << host               << "\r\n"
             << "Upgrade: websocket"           << "\r\n"
             << "Connection: upgrade"          << "\r\n"
             << "Sec-WebSocket-Key: " << nonce << "\r\n"
             << "Sec-WebSocket-Version: 13"    << "\r\n"
             << "\r\n";
-        peer.putall(request.str());
+        myPeer.putall(request.str());
         
         // Wait for upgrade approval.
         http::Response response;
         ::size_t used = 0;
         ::size_t pass = 0;
         do {
-            pass = peer.get(data, size);
+            pass = myPeer.get(data, size);
             if ( pass == 0 ) {
                 std::cerr << "Peer has finished." << std::endl;
                 break;

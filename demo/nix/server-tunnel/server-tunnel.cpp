@@ -5,24 +5,42 @@
  * @author Andre Caron (andre.louis.caron@usherbrooke.ca)
  */
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <iostream>
+
+#include "options.hpp"
 
 #include "nix/Endpoint.hpp"
 #include "nix/File.hpp"
 #include "nix/Listener.hpp"
-#include "nix/Stream.hpp"
-
 #include "nix/Server.hpp"
+#include "nix/Stream.hpp"
 
 int main ( int argc, char ** argv )
 try
 {
-    // Get the peer's name from the command line.
-    nix::net::Endpoint endpoint = nix::net::Endpoint::any(80);
-    if (argc >= 3) {
-        endpoint = nix::net::Endpoint::resolve(argv[1], argv[2]);
+    // Get the host name.
+    if (argc < 2)
+    {
+        std::cerr
+            << "Host name or IP address required."
+            << std::endl;
+        return (EXIT_FAILURE);
     }
+    const std::string name(argv[1]);
+    std::cerr
+        << "Host: '" << name << "'."
+        << std::endl;
+
+    // Get the port number.
+    const uint16_t port = ::getarg<uint16_t>(argc-1, argv+1, "-p", 80);
+    std::cerr
+        << "Port: '" << port << "'."
+        << std::endl;
+
+    // Assemble the IP end point.
+    const nix::net::Endpoint endpoint =
+        nix::net::Endpoint::resolve(name.c_str(), port);
 
     // Open both ends of the tunnel.
     nix::File host(STDIN_FILENO);
@@ -30,7 +48,7 @@ try
     nix::net::Stream peer(listener);
 
     // Perform tunnelled data exchange.
-    nix::Server(host, peer).exchange();
+    nix::Server(host, peer).exchange(name);
 }
 catch ( const std::exception& error )
 {

@@ -9,6 +9,7 @@
 
 #include <stdint.h>
 #include <netinet/in.h>
+#include <iosfwd>
 
 namespace nix { namespace net {
 
@@ -20,6 +21,8 @@ namespace nix { namespace net {
 
         /* class methods. */
     public:
+        static const Endpoint resolve ( const char * name );
+        static const Endpoint resolve ( const char * name, uint16_t port );
         static const Endpoint resolve ( const char * name, const char * port );
 
         static const Endpoint any ( uint16_t port );
@@ -28,6 +31,7 @@ namespace nix { namespace net {
         /* construction. */
     public:
         Endpoint ( const ::sockaddr_in& data );
+        Endpoint ( const ::sockaddr_in& data, uint16_t port );
 
         Endpoint ( uint16_t port )
         {
@@ -59,6 +63,9 @@ namespace nix { namespace net {
             return (myData);
         }
     };
+
+    std::ostream& operator<<
+        ( std::ostream& stream, const Endpoint& endpoint );
 
 } }
 
