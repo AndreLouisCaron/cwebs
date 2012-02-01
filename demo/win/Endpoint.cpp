@@ -15,26 +15,26 @@
 #include "Error.hpp"
 
 #include <ws2tcpip.h>
+#include <ostream>
 
 namespace win { namespace net {
 
-    const Endpoint Endpoint::resolve ( const char * name )
+    const Endpoint Endpoint::resolve ( const char * name, uint16_t port )
     {
         ::addrinfo hint; ::ZeroMemory(&hint, sizeof(hint));
         hint.ai_family   = AF_INET;
         hint.ai_socktype = SOCK_STREAM;
         hint.ai_protocol = IPPROTO_TCP;
         ::addrinfo * peer = 0;
-        const int result = ::getaddrinfo(name, "http", &hint, &peer);
+        const int result = ::getaddrinfo(name, 0, &hint, &peer);
         if (result != 0) {
-            UNCHECKED_WIN32C_ERROR(getaddrinfo, result);
+            throw Error(result);
         }
-        const win::net::Endpoint endpoint(
-            *reinterpret_cast<const ::sockaddr_in*>(peer->ai_addr));
+        const Endpoint endpoint(
+            *reinterpret_cast<const ::sockaddr_in*>(peer->ai_addr), port);
         ::freeaddrinfo(peer);
         return (endpoint);
     }
-
     const Endpoint Endpoint::any ( uint16_t port )
     {
         ::sockaddr_in data;
@@ -59,6 +59,12 @@ namespace win { namespace net {
     Endpoint::Endpoint ( const Data& data )
     {
         ::CopyMemory(&myData, &data, sizeof(myData));
+    }
+
+    Endpoint::Endpoint ( const Data& data, uint16_t port )
+    {
+        ::CopyMemory(&myData, &data, sizeof(myData));
+        myData.sin_port = ::htons(port);
     }
 
     Endpoint::Endpoint ( uint32_t address, uint16_t port )
@@ -114,6 +120,19 @@ namespace win { namespace net {
     uint16_t Endpoint::port () const
     {
         return (::ntohs(myData.sin_port));
+    }
+
+    std::ostream& operator<<
+        ( std::ostream& stream, const Endpoint& endpoint )
+    {
+        const ::sockaddr_in& data = endpoint.data();
+        stream
+            << int(data.sin_addr.S_un.S_un_b.s_b1) << '.'
+            << int(data.sin_addr.S_un.S_un_b.s_b2) << '.'
+            << int(data.sin_addr.S_un.S_un_b.s_b3) << '.'
+            << int(data.sin_addr.S_un.S_un_b.s_b4) << ':'
+            << ::ntohs(data.sin_port);
+        return (stream);
     }
 
 } }

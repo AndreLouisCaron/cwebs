@@ -47,10 +47,10 @@ namespace win {
         static std::string approve_nonce ( const std::string& key );
         void generate_nonce ( void * data, size_t size );
 
-        virtual void handshake () = 0;
+        virtual void handshake ( const std::string& host ) = 0;
 
     public:
-        void exchange ();
+        void exchange ( const std::string& host );
 
     private:
         void foreground ();

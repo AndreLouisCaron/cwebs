@@ -65,9 +65,9 @@ namespace win {
         ::mt19937_prng_grab(&myPrng, data, size);
     }
 
-    void Tunnel::exchange ()
+    void Tunnel::exchange ( const std::string& host )
     {
-        handshake();
+        handshake(host);
 
         // Run interaction with peer in background thread because
         // we can't do anything but block on standard input (we

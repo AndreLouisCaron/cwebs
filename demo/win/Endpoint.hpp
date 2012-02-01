@@ -16,6 +16,7 @@
 
 #include <WinSock2.h>
 #include <Windows.h>
+#include <iosfwd>
 
 namespace win { namespace net {
 
@@ -31,7 +32,7 @@ namespace win { namespace net {
 
         /* class methods. */
     public:
-        static const Endpoint Endpoint::resolve ( const char * name );
+        static const Endpoint resolve ( const char * name, uint16_t port );
 
         static const Endpoint any ( uint16_t port );
         static const Endpoint localhost ( uint16_t port );
@@ -44,6 +45,7 @@ namespace win { namespace net {
     public:
         Endpoint ();
         Endpoint ( const Data& data );
+        Endpoint ( const Data& data, uint16_t port );
         Endpoint ( uint32_t address, uint16_t port );
         Endpoint
             ( uint8_t b1, uint8_t b2, uint8_t b3, uint8_t b4, uint16_t port );
@@ -62,6 +64,9 @@ namespace win { namespace net {
 
         uint16_t port () const;
     };
+
+    std::ostream& operator<<
+        ( std::ostream& stream, const Endpoint& endpoint );
 
 } }
 
