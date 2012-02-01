@@ -132,14 +132,26 @@ namespace win {
     void Tunnel::tohost ( ::ws_iwire * stream, const void * data, uint64 size )
     {
         Tunnel& tunnel = *static_cast<Tunnel*>(stream->baton);
-        tunnel.myHostO.putall(data, size);
+        uint64 ubnd = static_cast<uint64>(MAXDWORD);
+        uint64 used = 0;
+        while (used < size) {
+            const ::DWORD pass = static_cast<::DWORD>(MIN(ubnd, size));
+            tunnel.myHostO.putall(static_cast<const char*>(data)+used, pass);
+            used += pass;
+        }
         tunnel.myHostO.flush();
     }
 
     void Tunnel::topeer ( ::ws_owire * stream, const void * data, uint64 size )
     {
         Tunnel& tunnel = *static_cast<Tunnel*>(stream->baton);
-        tunnel.myPeer.putall(data, size);
+        uint64 ubnd = static_cast<uint64>(MAXDWORD);
+        uint64 used = 0;
+        while (used < size) {
+            const ::DWORD pass = static_cast<::DWORD>(MIN(ubnd, size));
+            tunnel.myPeer.putall(static_cast<const char*>(data)+used, pass);
+            used += pass;
+        }
     }
 
 }

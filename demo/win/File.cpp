@@ -88,7 +88,7 @@ namespace win {
 
     void File::getall ( char * data, ::DWORD size )
     {
-        int used = 0;
+        ::DWORD used = 0;
         int pass = 0;
         do {
             pass = get(data+used, size-used);
