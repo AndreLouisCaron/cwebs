@@ -15,7 +15,7 @@
 
 #include "b64.hpp"
 #include "Digest.hpp"
-#include "Response.hpp"
+#include "http.hpp"
 
 #include <sstream>
 
@@ -81,8 +81,8 @@ namespace nix {
         }
         
         // Confirm handshake.
-        if (!http::ieq(request.header("Connection"),"Upgrade"  )||
-            !http::ieq(request.header("Upgrade"   ),"WebSocket"))
+        if (!http::ieq(response.header("Connection"),"Upgrade"  )||
+            !http::ieq(response.header("Upgrade"   ),"WebSocket"))
         {
             std::cerr << "Upgrade request denied." << std::endl;
         }

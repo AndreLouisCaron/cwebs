@@ -15,7 +15,7 @@
 
 #include "b64.hpp"
 #include "Digest.hpp"
-#include "Request.hpp"
+#include "http.hpp"
 
 #include <sstream>
 
