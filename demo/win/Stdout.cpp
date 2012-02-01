@@ -61,9 +61,14 @@ namespace win {
     void Stdout::flush ()
     {
         const ::BOOL result = ::FlushFileBuffers(handle());
-        if ( result == FALSE ) {
+        if ( result == FALSE )
+        {
             const ::DWORD error = ::GetLastError();
-            UNCHECKED_WIN32C_ERROR(FlushFileBuffers, error);
+            // Console device can't be flushed.  Don't
+            // crash if the device is not a regular file.
+            if (result != ERROR_INVALID_HANDLE) {
+                UNCHECKED_WIN32C_ERROR(FlushFileBuffers, error);
+            }
         }
     }
 
