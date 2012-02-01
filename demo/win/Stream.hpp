@@ -14,7 +14,6 @@
  * @author Andre Caron (andre.l.caron@gmail.com)
  */
 
-#include "Event.hpp"
 #include <WinSock2.h>
 #include <Windows.h>
 #include <string>
@@ -51,8 +50,6 @@ namespace win { namespace net {
         /* methods. */
     public:
         const Handle handle () const;
-
-        void select ( Event& event, long mask );
 
         int get ( void * data, int size );
         void getall ( void * data, int size );

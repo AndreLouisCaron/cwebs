@@ -16,7 +16,6 @@
 
 #include "webs.h"
 #include "mt19937.h"
-#include "win/Event.hpp"
 #include "win/Stdin.hpp"
 #include "win/Stdout.hpp"
 #include "win/Stream.hpp"

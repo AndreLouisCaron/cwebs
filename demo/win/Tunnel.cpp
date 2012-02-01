@@ -12,11 +12,7 @@
  */
 
 #include "Tunnel.hpp"
-
-#include "win/Buffer.hpp"
 #include "win/Thread.hpp"
-#include "win/WaitSet.hpp"
-
 #include "Digest.hpp"
 
 #include <ctime>
