@@ -35,7 +35,7 @@ try
     const nix::net::Endpoint endpoint =
         nix::net::Endpoint::resolve(name.c_str(), port);
     std::cerr
-        << "Listening on '" << endpoint << "'."
+        << "Connecting to '" << endpoint << "'."
         << std::endl;
 
     // Open both ends of the tunnel.

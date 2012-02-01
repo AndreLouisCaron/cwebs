@@ -28,19 +28,16 @@ try
         return (EXIT_FAILURE);
     }
     const std::string name(argv[1]);
-    std::cerr
-        << "Host: '" << name << "'."
-        << std::endl;
 
     // Get the port number.
     const uint16_t port = ::getarg<uint16_t>(argc-1, argv+1, "-p", 80);
-    std::cerr
-        << "Port: '" << port << "'."
-        << std::endl;
 
     // Assemble the IP end point.
     const nix::net::Endpoint endpoint =
         nix::net::Endpoint::resolve(name.c_str(), port);
+    std::cerr
+        << "Connecting to '" << endpoint << "'."
+        << std::endl;
 
     // Open both ends of the tunnel.
     nix::File host(STDIN_FILENO);
