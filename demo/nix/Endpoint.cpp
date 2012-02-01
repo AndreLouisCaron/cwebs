@@ -58,12 +58,12 @@ namespace nix { namespace net {
         data.sin_family = AF_INET;
         data.sin_addr.s_addr = INADDR_ANY;
         data.sin_port = ::htons(port);
-	return (Endpoint(data));
+        return (Endpoint(data));
     }
 
     const Endpoint Endpoint::localhost ( uint16_t port )
     {
-      return (Endpoint(127,0,0,1,port));
+        return (Endpoint(127,0,0,1,port));
     }
 
     Endpoint::Endpoint ( const ::sockaddr_in& data )
@@ -82,11 +82,11 @@ namespace nix { namespace net {
     {
       const ::sockaddr_in& data = endpoint.data();
       stream
-	<< ((data.sin_addr.s_addr >>  0) & 0xff) << '.'
-	<< ((data.sin_addr.s_addr >>  8) & 0xff) << '.'
-	<< ((data.sin_addr.s_addr >> 16) & 0xff) << '.'
-	<< ((data.sin_addr.s_addr >> 24) & 0xff) << ':'
-	<< ::ntohs(data.sin_port);
+          << ((data.sin_addr.s_addr >>  0) & 0xff) << '.'
+          << ((data.sin_addr.s_addr >>  8) & 0xff) << '.'
+          << ((data.sin_addr.s_addr >> 16) & 0xff) << '.'
+          << ((data.sin_addr.s_addr >> 24) & 0xff) << ':'
+          << ::ntohs(data.sin_port);
       return (stream);
     }
 
