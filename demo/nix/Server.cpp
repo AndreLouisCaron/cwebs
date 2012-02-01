@@ -54,8 +54,8 @@ namespace nix {
         }
         
         // Confirm handshake.
-        if ((request.header("Connection") != "upgrade"  )||
-            (request.header("Upgrade"   ) != "websocket"))
+        if (!http::ieq(request.header("Connection"),"Upgrade"  )||
+            !http::ieq(request.header("Upgrade"   ),"WebSocket"))
         {
             std::cerr << "Invalid upgrade request." << std::endl;
         }

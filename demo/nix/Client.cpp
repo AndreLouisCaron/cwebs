@@ -81,8 +81,8 @@ namespace nix {
         }
         
         // Confirm handshake.
-        if ((response.header("Connection") != "upgrade"  )||
-            (response.header("Upgrade"   ) != "websocket"))
+        if (!http::ieq(request.header("Connection"),"Upgrade"  )||
+            !http::ieq(request.header("Upgrade"   ),"WebSocket"))
         {
             std::cerr << "Upgrade request denied." << std::endl;
         }
