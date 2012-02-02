@@ -52,7 +52,18 @@ extern "C" {
  */
 typedef struct mt19937_prng_t
 {
+    /*!
+     * @internal
+     * @private
+     * @brief Internal generator state, shuffled every 623*4 bytes.
+     */
     uint32_t data[624];
+
+    /*!
+     * @internal
+     * @private
+     * @brief Number of integers generated since last shuffle.
+     */
     uint32_t base;
 
 } mt19937_prng;

@@ -33,9 +33,16 @@
 
 #include "iwire.h"
 
-  //
-  // List all parser states in advance.
-  //
+/*!
+ * @internal
+ * @defgroup parser-states Incremental parser finite machine states.
+ */
+
+/*!
+ * @internal
+ * @def WS_DECLARE_STATE
+ * @brief Simple shorthand to declare websocket parser state handlers.
+ */
 #define WS_DECLARE_STATE(name) \
     static uint64 name \
         ( struct ws_iwire * stream, const uint8 * data, uint64 size );
@@ -49,9 +56,11 @@ WS_DECLARE_STATE(_ws_parse_data);
 WS_DECLARE_STATE(_ws_parse_data_1);
 WS_DECLARE_STATE(_ws_parse_data_2);
 
-  //
-  // Initial state, waiting for a message to start.
-  //
+/*!
+ * @internal
+ * @ingroup parser-states
+ * @brief Idle state, expecting the start of the next message.
+ */
 static uint64 _ws_idle
     ( struct ws_iwire * stream, const uint8 * data, uint64 size )
 {
@@ -64,6 +73,10 @@ static uint64 _ws_idle
     return (0);
 }
 
+/*!
+ * @internal
+ * @brief Invokes end-of-frame and end-of-message callbacks and resets state.
+ */
 static void _ws_done ( struct ws_iwire * stream )
 {
     if ( stream->end_fragment ) {
@@ -80,9 +93,11 @@ static void _ws_done ( struct ws_iwire * stream )
     }
 }
 
-  //
-  // Parsing a fragmented message, waiting for next frame.
-  //
+/*!
+ * @internal
+ * @ingroup parser-states
+ * @brief Idle state, expecting a fragment that continues a fragmented message.
+ */
 static uint64 _ws_wait
     ( struct ws_iwire * stream, const uint8 * data, uint64 size )
 {
@@ -115,9 +130,18 @@ static uint64 _ws_wait
     return (used);
 }
 
-  //
-  // Parsing a frame, waiting for 7-bit frame size to arrive.
-  //
+/*!
+ * @internal
+ * @ingroup parser-states
+ * @brief Check first byte of message size.
+ *
+ * If the first byte is one of the special values 126 or 127, then the fragment
+ * size is parsed as 2 or 8 bytes, respectively.  In that case, the state is
+ * forwarded to the appropriate handlers.
+ *
+ * @see _ws_parse_size_2
+ * @see _ws_parse_size_3
+ */
 static uint64 _ws_parse_size_1
     ( struct ws_iwire * stream, const uint8 * data, uint64 size )
 {
@@ -151,9 +175,13 @@ static uint64 _ws_parse_size_1
     return (used);
 }
 
-  //
-  // Parsing a frame, waiting for 16-bit frame size to arrive.
-  //
+/*!
+ * @internal
+ * @ingroup parser-states
+ * @brief Accumulate and parse 2 byte fragment size.
+ *
+ * @see _ws_parse_size_1
+ */
 static uint64 _ws_parse_size_2
     ( struct ws_iwire * stream, const uint8 * data, uint64 size )
 {
@@ -182,9 +210,13 @@ static uint64 _ws_parse_size_2
     return (used);
 }
 
-  //
-  // Parsing a frame, waiting for 64-bit frame size to arrive.
-  //
+/*!
+ * @internal
+ * @ingroup parser-states
+ * @brief Accumulate and parse 8 byte fragment size.
+ *
+ * @see _ws_parse_size_1
+ */
 static uint64 _ws_parse_size_3
     ( struct ws_iwire * stream, const uint8 * data, uint64 size )
 {
@@ -221,10 +253,13 @@ static uint64 _ws_parse_size_3
     return (used);
 }
 
-  //
-  // Parsing frame, waiting for mask to arrive.  If the frame payload is not
-  // masked, then simply forwards to the payload state.
-  //
+/*!
+ * @internal
+ * @ingroup parser-states
+ * @brief Accumulate and parse 4 byte mask.
+ *
+ * If the frame is not masked, forward directly to the next state.
+ */
 static uint64 _ws_parse_mask
     ( struct ws_iwire * stream, const uint8 * data, uint64 size )
 {
@@ -271,9 +306,12 @@ static uint64 _ws_parse_mask
     return (used);
 }
 
-  //
-  // Parsing message payload, forward data to owner.
-  //
+/*!
+ * @internal
+ * @brief Process and forward unmasked frame payload.
+ *
+ * @see _ws_parse_data
+ */
 static uint64 _ws_parse_data_1
     ( struct ws_iwire * stream, const uint8 * data, uint64 size )
 {
@@ -291,9 +329,12 @@ static uint64 _ws_parse_data_1
     return (used);
 }
 
-  //
-  // Parsing message payload, unmask data and forward to owner.
-  //
+/*!
+ * @internal
+ * @brief Process and forward masked frame payload.
+ *
+ * @see _ws_parse_data
+ */
 static uint64 _ws_parse_data_2
     ( struct ws_iwire * stream, const uint8 * data, uint64 size )
 {
@@ -321,15 +362,40 @@ static uint64 _ws_parse_data_2
     return (used);
 }
 
-  //
-  // Parsing frame payload, forward to mask or unmasked data handler.
-  //
+/*!
+ * @internal
+ * @ingroup parser-states
+ * @brief Process and forward frame payload.
+ *
+ * @see _ws_parse_data_1
+ * @see _ws_parse_data_2
+ */
 static uint64 _ws_parse_data
     ( struct ws_iwire * stream, const uint8 * data, uint64 size )
 {
     return (stream->usem?
         _ws_parse_data_2(stream, data, size) :
         _ws_parse_data_1(stream, data, size));
+}
+
+/*!
+ * @internal
+ * @brief Consume available data and trigger appropriate application callbacks.
+ *
+ * @see ws_iwire_feed
+ */
+static uint64 _ws_iwire_feed
+    ( struct ws_iwire * stream, const uint8 * data, uint64 size )
+{
+    uint64 used = 0;
+    do {
+        // Note: invoking the state handler might move the parser to a new
+        //   state.  In the end, all data will be consumed by one state or
+        //   the other.
+        used += (*stream->state)(stream, data+used, size-used);
+    }
+    while ( used < size );
+    return (used);
 }
 
 void ws_iwire_init ( struct ws_iwire * stream )
@@ -344,20 +410,6 @@ void ws_iwire_init ( struct ws_iwire * stream )
     stream->code = 0;
     stream->good = 1;
     stream->state = &_ws_idle;
-}
-
-uint64 _ws_iwire_feed
-    ( struct ws_iwire * stream, const uint8 * data, uint64 size )
-{
-    uint64 used = 0;
-    do {
-        // Note: invoking the state handler might move the parser to a new
-        //   state.  In the end, all data will be consumed by one state or
-        //   the other.
-        used += (*stream->state)(stream, data+used, size-used);
-    }
-    while ( used < size );
-    return (used);
 }
 
 uint64 ws_iwire_feed

@@ -87,6 +87,11 @@ if(${PROJECT_NAME} STREQUAL ${CMAKE_PROJECT_NAME})
 
   # Build API documentation.
   find_package(Doxygen QUIET)
+  if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+    set(DOXYGEN_PUBLISH_INTERNALS "YES")
+  else()
+    set(DOXYGEN_PUBLISH_INTERNALS "NO")
+  endif()
   configure_file(
     ${CMAKE_SOURCE_DIR}/help/Doxyfile
     ${CMAKE_BINARY_DIR}/Doxyfile @ONLY)

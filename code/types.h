@@ -34,11 +34,30 @@
  * @see http://tools.ietf.org/html/rfc6455
  */
 
+/*!
+ * @brief Unsigned 8-bit integer, 1 byte.
+ */
 typedef unsigned char uint8;
+
+/*!
+ * @brief Unsigned 16-bit integer, 2 bytes.
+ */
 typedef unsigned short uint16;
+
+/*!
+ * @brief Unsigned 32-bit integer, 4 bytes.
+ */
 typedef unsigned int uint32;
+
+/*!
+ * @brief Unsigned 64-bit integer, 8 bytes.
+ */
 typedef unsigned long long uint64;
 
+/*!
+ * @def MIN
+ * @brief Minimum of two integers.
+ */
 #define MIN(a,b) (((a) < (b))? (a) : (b))
 
 #endif /* _types_h__ */

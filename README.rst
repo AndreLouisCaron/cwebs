@@ -84,6 +84,15 @@ On Microsoft Windows
       cd work
       cmake -G "NMake Makefiles" ..
 
+   If you intend to modify (rather than simply use) the library, generate a
+   debug build.  This will compile using debugging symbols and publish HTML
+   documentation for internal and private symbols in addition to the public
+   symbols.  Set the build type like so:
+
+   ::
+
+      cmake -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=Debug ..
+
 #. compile the libraries and tests
 
    ::
@@ -129,6 +138,15 @@ On UNIX-like systems
       mkdir work
       cd work
       cmake ..
+
+   If you intend to modify (rather than simply use) the library, generate a
+   debug build.  This will compile using debugging symbols and publish HTML
+   documentation for internal and private symbols in addition to the public
+   symbols.  Set the build type like so:
+
+   ::
+
+      cmake -DCMAKE_BUILD_TYPE=Debug ..
 
 #. compile the libraries and tests
 

@@ -36,9 +36,15 @@
 #include <stdlib.h>
 #include <string.h>
 
-  //
-  // horrible random number generator.  used if nothing better is provided.
-  //
+/*!
+ * @internal
+ * @brief Simple (and bad) random number generator.
+ * @param stream Current writer state.
+ * @param mask 4-byte array to fill in with random values.
+ *
+ * This generator is used for creating masks when no better random number
+ * generator is provided.
+ */
 static void _ws_unsafe_random_mask ( struct ws_owire * stream, uint8 mask[4] )
 {
     mask[0] = rand() & 0xff;
@@ -47,17 +53,11 @@ static void _ws_unsafe_random_mask ( struct ws_owire * stream, uint8 mask[4] )
     mask[3] = rand() & 0xff;
 }
 
-static void _ws_copy ( uint8 * lhs, const uint8 * rhs, uint8 size )
-{
-    uint8 used = 0;
-    for ( ; (used < size); ++used ) {
-        *lhs++ = *rhs++;
-    }
-}
-
-  //
-  // generate frame mask, if required.
-  //
+/*!
+ * @internal
+ * @brief Generated frame mask using custom generator, if required.
+ * @param stream Current writer state.
+ */
 static void _ws_mask ( struct ws_owire * stream )
 {
     if ( (stream->data[1]&0x80) != 0 ) {
@@ -65,9 +65,11 @@ static void _ws_mask ( struct ws_owire * stream )
     }
 }
 
-  //
-  // emit frame header.
-  //
+/*!
+ * @internal
+ * @brief Pack frame header and forward it to the application for transfer.
+ * @param stream Current writer state.
+ */
 static void _ws_head ( struct ws_owire * stream )
 {
     const uint8 size = (stream->data[1] & 0x7f);
@@ -91,9 +93,20 @@ static void _ws_head ( struct ws_owire * stream )
     stream->accept_content(stream, stream->data, used);
 }
 
-  //
-  // fail emit frame content, not ready yet.
-  //
+/*!
+ * @internal
+ * @brief Default writer state.  Emits a writer error if called.
+ * @param stream Current writer state.
+ * @param data Ignored, used to comply with writer handler signature.
+ * @param size Ignored, used to comply with writer handler signature.
+ *
+ * The writer uses this to protected against ill-formed applications that start
+ * trying to send data before the frame header is prepared.  As soon as the
+ * frame header is sent, this handler is changed for a real writer handler.
+ *
+ * @see _ws_body_1
+ * @see _ws_body_2
+ */
 static uint64 _ws_fail
     ( struct ws_owire * stream, const uint8 * data, uint64 size )
 {
@@ -101,9 +114,16 @@ static uint64 _ws_fail
     return (0);
 }
 
-  //
-  // emit frame content.
-  //
+/*!
+ * @internal
+ * @brief Forward unmasked frame payload.
+ * @param stream Current writer state.
+ * @param data Data to be written.
+ * @param size Number of bytes to write.
+ *
+ * @see _ws_fail
+ * @see _ws_body_2
+ */
 static uint64 _ws_body_1
     ( struct ws_owire * stream, const uint8 * data, uint64 size )
 {
@@ -121,9 +141,16 @@ static uint64 _ws_body_1
     return (size);
 }
 
-  //
-  // mask, then emit frame content.
-  //
+/*!
+ * @internal
+ * @brief Forward masked frame payload.
+ * @param stream Current writer state.
+ * @param data Data to be written.
+ * @param size Number of bytes to write.
+ *
+ * @see _ws_fail
+ * @see _ws_body_1
+ */
 static uint64 _ws_body_2
     ( struct ws_owire * stream, const uint8 * data, uint64 size )
 {
@@ -152,9 +179,16 @@ static uint64 _ws_body_2
     return (used);
 }
 
-  //
-  // take care of masking if required, then ship the data.
-  //
+/*!
+ * @internal
+ * @brief Process and forward frame payload, masking if necessary.
+ * @param stream Current writer state.
+ * @param data Data to be written.
+ * @param size Number of bytes to write.
+ *
+ * @see _ws_body_1
+ * @see _ws_body_2
+ */
 static uint64 _ws_body
     ( struct ws_owire * stream, const uint8 * data, uint64 size )
 {
@@ -163,9 +197,18 @@ static uint64 _ws_body
         _ws_body_2(stream, data, size));
 }
 
-  //
-  // emit full message (optionally break it up).
-  //
+/*!
+ * @internal
+ * @brief Emit a complete message, fragmenting it if necessary.
+ * @param stream Current writer state.
+ * @param data Data to be written.
+ * @param size Number of bytes to write.
+ * @param code The message type (text, data, ping, etc.).
+ *
+ * @bug The message type is not considered when auto-fragmenting.  However,
+ *  control frames (ping, pong and close) must not be fragmented (see RFC6455,
+ *  section 5.4).
+ */
 static void ws_owire_put_full
     ( struct ws_owire * stream, const uint8 * data, uint64 size, uint8 code )
 {
