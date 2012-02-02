@@ -68,6 +68,8 @@ macro(qt4_find_moc output headers)
   endforeach()
 endmacro()
 
+enable_testing()
+
 if(MSVC)
   # Ignore Microsoft's recommendations of
   # safety at the expense of portability.
@@ -107,5 +109,8 @@ if(${PROJECT_NAME} STREQUAL ${CMAKE_PROJECT_NAME})
 
   # Build demo projects.
   add_subdirectory(demo)
+
+  # Register unit tests.
+  add_subdirectory(test)
 
 endif()

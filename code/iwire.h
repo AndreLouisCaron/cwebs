@@ -81,6 +81,9 @@ void ws_iwire_init ( struct ws_iwire * stream );
 uint64 ws_iwire_feed
     ( struct ws_iwire * stream, const void * data, uint64 size );
 
+int ws_iwire_mask ( const struct ws_iwire * stream );
+int ws_iwire_last ( const struct ws_iwire * stream );
+
 int ws_iwire_ping ( const struct ws_iwire * stream );
 int ws_iwire_pong ( const struct ws_iwire * stream );
 

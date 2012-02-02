@@ -366,6 +366,16 @@ uint64 ws_iwire_feed
     return (_ws_iwire_feed(stream, (const uint8*)data, size));
 }
 
+int ws_iwire_mask ( const struct ws_iwire * stream )
+{
+    return (stream->usem);
+}
+
+int ws_iwire_last ( const struct ws_iwire * stream )
+{
+    return (stream->last);
+}
+
 int ws_iwire_ping ( const struct ws_iwire * stream )
 {
     return (stream->code == 0x09);
