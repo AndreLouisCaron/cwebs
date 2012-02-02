@@ -1,6 +1,6 @@
-=========================================================================
-  `cwebs` --- Incremental parser for the web socket wire protocol, in C
-=========================================================================
+=============================================
+  `cwebs` --- WebSocket wire protocol, in C
+=============================================
 :authors:
    André Caron
 :contact: andre.l.caron@gmail.com
@@ -14,6 +14,33 @@ is implemented as a finite state machine (FSM) for use in streaming applications
 interruptible).  As such, the parser itself does not buffer any received data.
 It just forwards it to registered callbacks.  It requires little overhead and is
 well suited for being used in an object-oriented wrapper.
+
+Requirements
+============
+
+The core library has no dependencies.  No threads, no sockets, no files,
+nothing.  It doesn't even dynamically allocate any memory.  It assumes nothing
+of the context in which you intend to use it.  You can use it with any
+networking framework, any HTTP library, etc.
+
+The test suites require some external support for implementation of HTTP request
+and response parsers, Base64 encoding, SHA-1, etc.  Suitable libraries are
+referenced as Git submodules.  These libraries are *not* required to use the
+core library services.
+
+Actual dependencies are:
+
+#. CMake.  If you don't like CMake, you can whip up a build script for just
+   about any build system.  The code library consists of only 2 C source files
+   and a few C headers.
+
+#. A C/C++ compiler toolchain:
+
+   * Microsoft Visual Studio (any recent version should do)
+   * GCC + Make
+
+#. Doxygen (optional).  The documentation is not yet hosted online, so you will
+   need to build a local copy.
 
 Demonstration
 =============
