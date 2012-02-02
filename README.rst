@@ -18,9 +18,15 @@ well suited for being used in an object-oriented wrapper.
 Demonstration
 =============
 
+There's a C++-based tunnel program with both UNIX and Windows implementations
+based on nothing but the native APIs.  They can be used to tunnel arbitrary
+data exchange over port 80, all with standard HTTP semantics for virtual
+hosting, URL-based dispatch, encryption, etc. (caveat: very few web servers
+implement facilities for such a dispatch given WebSockets).
+
 There's a full-blown WebSockets server based on `Qt`_ and the `http-parser`_
 library.  You can test the echo server with the echo client project which is
-implemented using the HTML 5 WebSocket API and jQuery_.
+implemented using the `HTML 5 WebSocket API`_ and jQuery_.
 
 Compiling
 =========
@@ -29,36 +35,143 @@ This library provides a CMake_ build script.  To compile the library, download
 and install CMake_, and then generate build scripts for your favorite build
 tool.
 
-For example, to use NMake_ on Windows, proceed with the following steps::
+On Microsoft Windows
+--------------------
 
-    (*) rem -- use the "vsvars*.bat" scripts in your visual studio
-    (*) rem -- installation to put all the tools in your path or launch
-    (*) rem -- the visual studio shell from Visual Studio.
-    (*)
-    (0) cd your/projects/folder
-    (1) git clone git@github.com:AndreLouisCaron/cwebs.git
-    (2) cd cwebs
-    (3) mkdir work
-    (4) cd work
-    (5) cmake -G "NMake Makefiles" ..
-    (6) nmake
+#. launch the visual studio command prompt
 
-Lines (3) through (5) will help you generate project files.  Line (6) invokes
-the real build system used as a back-end and builds the project.  To generate a
-build script for another build system or IDE (such as Visual Studio 2005), read
-CMake's documentation to know what the generator name is.  Examples include:
+#. check out the source code (or download a source code bundle)
 
-* Visual Studio 2008: ``cmake -G "Visual Studio 9 2008" ..``
-* Unix Makefiles: ``cmake -G "Unix Makefiles" ..``
+   ::
+
+      git clone git@github.com:AndreLouisCaron/cwebs.git
+      cd cwebs
+      git submodule init
+      git submodule update
+
+#. generate NMake project files
+
+   ::
+
+      mkdir work
+      cd work
+      cmake -G "NMake Makefiles" ..
+
+#. compile the libraries and tests
+
+   ::
+
+      nmake
+
+#. build the HTML documentation (optional)
+
+   ::
+
+      nmake doc
+
+#. run the tests (optional)
+
+   ::
+
+      nmake /A test
+
+You can use JOM_ as an alternative to NMake to accelerate builds on
+multi-processor machines.  Use the ``"NMake Makefiles JOM"`` CMake
+generator and use ``jom`` instead of NMake.  Beware that the ``test``
+target is broken and you must still invoke ``nmake /A test`` to run
+the tests.
+
+On UNIX-like systems
+--------------------
+
+#. launch your favorite terminal
+
+#. check out the source code (or download a source code bundle)
+
+   ::
+
+      git clone git@github.com:AndreLouisCaron/cwebs.git
+      cd cwebs
+      git submodule init
+      git submodule update
+
+#. generate Makefiles
+
+   ::
+
+      mkdir work
+      cd work
+      cmake ..
+
+#. compile the libraries and tests
+
+   ::
+
+      make
+
+#. build the HTML documentation (optional)
+
+   ::
+
+      make doc
+
+#. run the tests (optional)
+
+   ::
+
+      make test
+
+License
+=======
+
+The code is distributed under the simplified 2-clause BSD licence.  It is
+absolutely free to use in both open source and commercial applications,
+provided you don't take credit for my work.
+
+You don't need my consent or anything to use the software, but it would be nice
+of you to tell me if you're using it.  It would allow me to keep a list of most
+notable uses, giving credibility to the software and ensuring it is maintained
+properly.  I also like to know that people are you using my software :-)
+
+Here is a verbatim copy of the license:
+
+::
+
+   Copyright (c) 2011-2012, Andre Caron (andre.l.caron@gmail.com)
+   All rights reserved.
+
+   Redistribution and use in source and binary forms, with or without
+   modification, are permitted provided that the following conditions are
+   met:
+
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+
+   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+   "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+   LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+   A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+   HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+   SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+   LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+   DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+   THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 References
 ==========
 
 * A nice `resource page about WebSockets`_
-* The `latest WebSocket draft specification`_
+* The `WebSocket specification`_
 
+.. _`HTML 5 WebSocket API`: http://dev.w3.org/html5/websockets/
 .. _`resource page about WebSockets`: http://websocket.org/
-.. _`latest WebSocket draft specification`: http://tools.ietf.org/html/draft-ietf-hybi-thewebsocketprotocol
+.. _`WebSocket specification`: http://tools.ietf.org/html/rfc6455
 
 .. _WebSocket: http://websocket.org/
 .. _CMake: http://www.cmake.org/
@@ -66,3 +179,4 @@ References
 .. _`Qt`: http://qt.nokia.com/products/
 .. _jQuery: http://jquery.com/
 .. _`http-parser`: https://github.com/joyent/http-parser
+.. _JOM: https://qt.gitorious.org/qt-labs/jom
