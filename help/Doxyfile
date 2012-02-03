@@ -11,7 +11,7 @@ DOXYFILE_ENCODING      = UTF-8
 
 PROJECT_NAME           = @PROJECT_NAME@
 PROJECT_NUMBER         = @PROJECT_VERSION@
-PROJECT_BRIEF          = "WebSocket wire protocol."
+PROJECT_BRIEF          = "WebSocket wire protocol"
 PROJECT_LOGO           = 
 
 OUTPUT_DIRECTORY       = @PROJECT_SOURCE_DIR@/help/
