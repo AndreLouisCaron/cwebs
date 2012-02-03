@@ -5,6 +5,10 @@
    André Caron
 :contact: andre.l.caron@gmail.com
 
+Check out the `project page`_ for compiled HTML documentation.
+
+.. _`project page`: http://andrelouiscaron.github.com/cwebs/
+
 Description
 ===========
 
