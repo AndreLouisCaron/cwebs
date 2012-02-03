@@ -26,6 +26,10 @@
 
 # Web Socket wire protocol implementation in C.
 
+# When publishing documentation, define the project version for Doxygen by
+# adding the -DPROJECT_VERSION=x.y.z when invoking CMake.  Then, build the
+# 'help' target.
+
 cmake_minimum_required(VERSION 2.6)
 
 project(cwebs)
