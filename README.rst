@@ -1,6 +1,6 @@
-=============================================
-  `cwebs` --- WebSocket wire protocol, in C
-=============================================
+==========================================
+  `cwebs`: WebSocket wire protocol, in C
+==========================================
 :authors:
    André Caron
 :contact: andre.l.caron@gmail.com
