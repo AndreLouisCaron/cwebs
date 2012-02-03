@@ -103,7 +103,7 @@ On Microsoft Windows
 
    ::
 
-      nmake doc
+      nmake help
 
 #. run the tests (optional)
 
@@ -158,7 +158,7 @@ On UNIX-like systems
 
    ::
 
-      make doc
+      make help
 
 #. run the tests (optional)
 
