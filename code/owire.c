@@ -258,7 +258,6 @@ static void ws_owire_put_full
 void ws_owire_init ( struct ws_owire * stream )
 {
     stream->accept_content = 0;
-    stream->prng = 0;
     stream->rand = &_ws_unsafe_random_mask;
     stream->baton = 0;
     stream->auto_fragment = 0;

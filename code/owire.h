@@ -110,7 +110,6 @@ struct ws_owire
      * in threaded applications since the standard library @c rand()
      * implementation is not guaranteed to be thread-safe.
      *
-     * @see prng
      * @see auto_mask
      * @see ws_owire_mask()
      */
@@ -123,17 +122,6 @@ struct ws_owire
      * @see accept_content()
      */
     void * baton;
-
-    /*!
-     * @public
-     * @brief External state reserved for use by application callbacks.
-     *
-     * This pointer is typically used to refer to the stateful pseudo random
-     * number generator that generates mask for the writer.
-     *
-     * @see rand()
-     */
-    void * prng;
 
     /*!
      * @public
@@ -293,7 +281,6 @@ void ws_owire_code ( struct ws_owire * stream, uint8 code );
  * This will indirectly invoke the @c ws_owire::rand callback to generate a
  * random mask.
  *
- * @see ws_owire::prng
  * @see ws_owire::rand
  */
 void ws_owire_mask ( struct ws_owire * stream );

@@ -74,6 +74,7 @@ namespace win {
 
         static void background ( void * context );
 
+        static void domask ( ::ws_owire * stream, uint8 mask[4] );
         static void tohost
             ( ::ws_iwire * stream, const void * data, uint64 size );
         static void topeer

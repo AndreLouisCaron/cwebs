@@ -34,16 +34,6 @@
 
 #include <ctime>
 
-namespace {
-
-    void _secure_random_mask ( struct ws_owire * stream, uint8 mask[4] )
-    {
-        ::mt19937_prng_grab
-            (static_cast<::mt19937_prng*>(stream->prng), mask, 4);
-    }
-
-}
-
 namespace win {
 
     Tunnel::Tunnel ( win::Stdin& host, win::net::Stream& peer, uint32_t salt )
@@ -59,8 +49,7 @@ namespace win {
 
         // Use a real pseudo-random number generator for masks and nonces.
         ::mt19937_prng_init(&myPrng, uint32_t(::time(0)^salt));
-        myOWire.prng = &myPrng;
-        myOWire.rand = &::_secure_random_mask;
+        myOWire.rand = &domask;
     }
 
     std::string Tunnel::approve_nonce ( const std::string& skey )
@@ -127,6 +116,12 @@ namespace win {
 
         // Let peer know we're not expecting any more data.
         myPeer.shutdowni();
+    }
+
+    void Tunnel::domask ( struct ws_owire * stream, uint8 mask[4] )
+    {
+        Tunnel& tunnel = *static_cast<Tunnel*>(stream->baton);
+        ::mt19937_prng_grab(&tunnel.myPrng, mask, 4);
     }
 
     void Tunnel::tohost ( ::ws_iwire * stream, const void * data, uint64 size )
