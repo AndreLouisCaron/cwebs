@@ -256,13 +256,6 @@ struct ws_iwire
     /*!
      * @internal
      * @private
-     * @brief 1 if the parser state is safe, 0 if an error occured.
-     */
-    int good;
-
-    /*!
-     * @internal
-     * @private
      * @brief Current parser state handler.
      *
      * This function reference is changed at state handlers to make the

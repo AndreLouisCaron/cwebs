@@ -443,7 +443,6 @@ void ws_iwire_init ( struct ws_iwire * stream )
     stream->usem = 0;
     stream->size = 0;
     stream->message_type = 0;
-    stream->good = 1;
     stream->handler = &_ws_idle;
     stream->status = ws_iwire_ok;
 }
