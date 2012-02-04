@@ -324,7 +324,9 @@ static uint64 _ws_parse_data_1
     // don't smear across frames.
     const uint64 used = MIN(stream->pass, size);
     // pass all possible data.
-    stream->accept_content(stream, data, used);
+    if ( stream->accept_content ) {
+        stream->accept_content(stream, data, used);
+    }
     // update cursors.
     stream->pass -= used;
     stream->used += used;
@@ -357,7 +359,9 @@ static uint64 _ws_parse_data_2
             bufdata[bufsize] = data[used++] ^ stream->mask[stream->used++%4];
         }
         // pass data to stream owner.
-        stream->accept_content(stream, bufdata, bufsize);
+        if ( stream->accept_content ) {
+            stream->accept_content(stream, bufdata, bufsize);
+        }
     }
     // adjust cursors.
     stream->pass -= used;
