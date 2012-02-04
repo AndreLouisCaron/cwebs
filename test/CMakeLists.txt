@@ -34,6 +34,7 @@ endmacro()
 
 # compile the test program(s).
 add_test_program(summarize-messages)
+add_test_program(invalid-extension)
 
 # shortcut for invoking 'summarize-messages' and checking outputs.
 macro(check_summary name input)
@@ -69,3 +70,5 @@ check_summary(005 "fragmented-unmasked-text-message"
 check_summary(006 "medium-binary-message"
   "data,p,256,22edfe35c32456210731c388df8aa3e5f8cff227"
 )
+
+add_test(invalid-extension invalid-extension)

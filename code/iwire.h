@@ -40,6 +40,20 @@
 extern "C" {
 #endif
 
+typedef enum ws_iwire_status
+{
+    /*!
+     * @brief No errors were detected.
+     */
+    ws_iwire_ok,
+
+    /*!
+     * @brief An invalid extension field was detected.
+     */
+    ws_iwire_invalid_extension,
+
+} ws_iwire_status;
+
 struct ws_iwire;
 
 /*!
@@ -165,6 +179,29 @@ struct ws_iwire
 
     /*!
      * @public
+     * @brief The current parser status.
+     *
+     * This value should be considered as read-only and should never be
+     * modified by applications.
+     */
+    ws_iwire_status status;
+
+    /*!
+     * @public
+     * @brief Defines the which extension fields may be enabled.
+     *
+     * This is a 3-bit mask.  Each incoming frame's extension field will be
+     * checked against this mask.  If a frame's extension field has any enabled
+     * bits not in this mask, an error will be reported.
+     *
+     * This value is 0 by default, meaning all extensions are rejected.  Set to
+     * a non-zero value to (partially) enable WebSocket wire protocol
+     * extensions.
+     */
+    uint8 extension_mask;
+
+    /*!
+     * @public
      * @brief External state reserved for use by application callbacks.
      *
      * @see new_message()
@@ -187,7 +224,7 @@ struct ws_iwire
      * @private
      * @brief Current frame's extension code.
      */
-    int eval;
+    int extension_code;
 
     /*!
      * @internal

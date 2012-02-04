@@ -109,10 +109,16 @@ static uint64 _ws_wait
         const uint8 byte = data[used++];
         // parse fields.
         stream->last = ((byte & 0x80) != 0);
-        stream->eval = ((byte & 0x70) >> 4);
+        stream->extension_code = ((byte & 0x70) >> 4);
         code = ((byte & 0x0f) >> 0);
-        // for fragmented messags, the opcode is set on the first frame
-        // only and is required to be 0 on subsequent frames.
+        // check for invalid extension fields.
+        if ((stream->extension_code & ~stream->extension_mask) != 0)
+        {
+            stream->status = ws_iwire_invalid_extension;
+            return (used);
+        }
+        // for fragmented messages, the opcode is set on the first
+        // frame only and is required to be 0 on subsequent frames.
         if ((stream->code != 0) && (code != 0))
         {
             // don't be fussy unless peer sends a different opcode.
@@ -394,7 +400,7 @@ static uint64 _ws_iwire_feed
         //   the other.
         used += (*stream->state)(stream, data+used, size-used);
     }
-    while ( used < size );
+    while ((used < size) && (stream->status == ws_iwire_ok));
     return (used);
 }
 
@@ -405,11 +411,14 @@ void ws_iwire_init ( struct ws_iwire * stream )
     stream->new_fragment = 0;
     stream->end_fragment = 0;
     stream->accept_content = 0;
+    stream->extension_mask = 0;
+    stream->extension_code = 0;
     stream->usem = 0;
     stream->size = 0;
     stream->code = 0;
     stream->good = 1;
     stream->state = &_ws_idle;
+    stream->status = ws_iwire_ok;
 }
 
 uint64 ws_iwire_feed
