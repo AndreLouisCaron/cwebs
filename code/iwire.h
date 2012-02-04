@@ -269,18 +269,18 @@ struct ws_iwire
      * @private
      * @brief Fixed-size buffer used to parse frame headers.
      *
-     * @see size
+     * @see stored
      */
-    uint8 data[8];
+    uint8 buffer[8];
 
     /*!
      * @internal
      * @private
-     * @brief Number of bytes buffered in @a data.
+     * @brief Number of bytes buffered in @a buffer.
      *
-     * @see size
+     * @see buffer
      */
-    uint64 size;
+    uint64 stored;
 
     /*!
      * @internal

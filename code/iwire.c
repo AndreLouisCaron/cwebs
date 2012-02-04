@@ -166,23 +166,23 @@ static uint64 _ws_parse_size_1
         const uint8 byte = data[used++];
         // parse fields.
         stream->unmask_payload = ((byte & 0x80) != 0);
-        stream->data[0] = ((byte & 0x7f) >> 0);
-        stream->size = 1;
+        stream->buffer[0] = ((byte & 0x7f) >> 0);
+        stream->stored = 1;
         // parse extended size, if necessary.
-        if ( stream->data[0] == 126 ) {
-            stream->size = 0;
+        if ( stream->buffer[0] == 126 ) {
+            stream->stored = 0;
             stream->handler = &_ws_parse_size_2; break;
         }
-        if ( stream->data[0] == 127 ) {
-            stream->size = 0;
+        if ( stream->buffer[0] == 127 ) {
+            stream->stored = 0;
             stream->handler = &_ws_parse_size_3; break;
         }
         // commit size.	
-	stream->pass = stream->data[0];
+	stream->pass = stream->buffer[0];
 	if ( stream->new_fragment ) {
             stream->new_fragment(stream, stream->pass);
         }
-        stream->size = 0;
+        stream->stored = 0;
         // start parsing mask.
         stream->handler = &_ws_parse_mask; break;
     }
@@ -205,18 +205,18 @@ static uint64 _ws_parse_size_2
         // fetch next byte.
         const uint8 byte = data[used++];
         // store it in the staging area.
-        stream->data[stream->size++] = byte;
+        stream->buffer[stream->stored++] = byte;
         // stop parsing when done.
-        if ( stream->size == 2 )
+        if ( stream->stored == 2 )
         {
             const uint16 size =
-                (((uint16)stream->data[0] << 8)
-                |((uint16)stream->data[1] << 0));
+                (((uint16)stream->buffer[0] << 8)
+                |((uint16)stream->buffer[1] << 0));
             stream->pass = size;
             if ( stream->new_fragment ) {
                 stream->new_fragment(stream, stream->pass);
             }
-            stream->size = 0;
+            stream->stored = 0;
             // start parsing mask.
             stream->handler = &_ws_parse_mask; break;
         }
@@ -240,26 +240,26 @@ static uint64 _ws_parse_size_3
         // fetch next byte.
         const uint8 byte = data[used++];
         // store it in the staging area.
-        stream->data[stream->size++] = byte;
+        stream->buffer[stream->stored++] = byte;
         // stop parsing when done.
-        if ( stream->size == 8 )
+        if ( stream->stored == 8 )
         {
             // assemble fragment size.
             const uint64 size =
-                (((uint64)stream->data[0] << 56)
-                |((uint64)stream->data[1] << 48)
-                |((uint64)stream->data[2] << 40)
-                |((uint64)stream->data[3] << 32)
-                |((uint64)stream->data[4] << 24)
-                |((uint64)stream->data[5] << 16)
-                |((uint64)stream->data[6] <<  8)
-                |((uint64)stream->data[7] <<  0));
+                (((uint64)stream->buffer[0] << 56)
+                |((uint64)stream->buffer[1] << 48)
+                |((uint64)stream->buffer[2] << 40)
+                |((uint64)stream->buffer[3] << 32)
+                |((uint64)stream->buffer[4] << 24)
+                |((uint64)stream->buffer[5] << 16)
+                |((uint64)stream->buffer[6] <<  8)
+                |((uint64)stream->buffer[7] <<  0));
             // notify start of fragment.
 	    stream->pass = size;
 	    if ( stream->new_fragment ) {
 	        stream->new_fragment(stream, size);
 	    }
-            stream->size = 0;
+            stream->stored = 0;
             // start parsing mask.
             stream->handler = &_ws_parse_mask; break;
         }
@@ -298,16 +298,16 @@ static uint64 _ws_parse_mask
         // fetch next byte.
         const uint8 byte = data[used++];
         // store it in the staging area.
-        stream->data[stream->size++] = byte;
+        stream->buffer[stream->stored++] = byte;
         // stop parsing when done.
-        if ( stream->size == 4 )
+        if ( stream->stored == 4 )
         {
             // store mask.
-            stream->mask[0] = stream->data[0];
-            stream->mask[1] = stream->data[1];
-            stream->mask[2] = stream->data[2];
-            stream->mask[3] = stream->data[3];
-            stream->size = 0;
+            stream->mask[0] = stream->buffer[0];
+            stream->mask[1] = stream->buffer[1];
+            stream->mask[2] = stream->buffer[2];
+            stream->mask[3] = stream->buffer[3];
+            stream->stored = 0;
             // start parsing data.
             stream->used = 0;
             stream->handler = &_ws_parse_data; break;
@@ -441,7 +441,7 @@ void ws_iwire_init ( struct ws_iwire * stream )
     stream->extension_mask = 0;
     stream->extension_code = 0;
     stream->unmask_payload = 0;
-    stream->size = 0;
+    stream->stored = 0;
     stream->message_type = 0;
     stream->handler = &_ws_idle;
     stream->status = ws_iwire_ok;
