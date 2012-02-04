@@ -165,7 +165,7 @@ static uint64 _ws_parse_size_1
         // fetch next byte.
         const uint8 byte = data[used++];
         // parse fields.
-        stream->usem    = ((byte & 0x80) != 0);
+        stream->unmask_payload = ((byte & 0x80) != 0);
         stream->data[0] = ((byte & 0x7f) >> 0);
         stream->size = 1;
         // parse extended size, if necessary.
@@ -283,7 +283,7 @@ static uint64 _ws_parse_mask
     // complete the frame right away if it is empty, this avoids
     // complicating the simple '_feed()' method.
     uint64 used = 0;
-    if ( !stream->usem )
+    if ( !stream->unmask_payload )
     {
         stream->used = 0;
         stream->handler = &_ws_parse_data;
@@ -391,7 +391,7 @@ static uint64 _ws_parse_data_2
 static uint64 _ws_parse_data
     ( struct ws_iwire * stream, const uint8 * data, uint64 size )
 {
-    return (stream->usem?
+    return (stream->unmask_payload?
         _ws_parse_data_2(stream, data, size) :
         _ws_parse_data_1(stream, data, size));
 }
@@ -440,7 +440,7 @@ void ws_iwire_init ( struct ws_iwire * stream )
     stream->accept_content = 0;
     stream->extension_mask = 0;
     stream->extension_code = 0;
-    stream->usem = 0;
+    stream->unmask_payload = 0;
     stream->size = 0;
     stream->message_type = 0;
     stream->handler = &_ws_idle;
@@ -453,9 +453,9 @@ uint64 ws_iwire_feed
     return (_ws_iwire_feed(stream, (const uint8*)data, size));
 }
 
-int ws_iwire_mask ( const struct ws_iwire * stream )
+int ws_iwire_masked ( const struct ws_iwire * stream )
 {
-    return (stream->usem);
+    return (stream->unmask_payload);
 }
 
 int ws_iwire_last_fragment ( const struct ws_iwire * stream )

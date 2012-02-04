@@ -252,7 +252,7 @@ struct ws_iwire
      *
      * @see mask
      */
-    int usem;
+    int unmask_payload;
 
     /*!
      * @internal
@@ -287,9 +287,9 @@ struct ws_iwire
      * @private
      * @brief Current frame's mask, if any.
      *
-     * The contents of the mask are undefined if @c usem is 0.
+     * The contents of the mask are undefined if @c unmask_payload is 0.
      *
-     * @see usem
+     * @see unmask_payload
      */
     uint8 mask[4];
 
@@ -357,7 +357,7 @@ uint64 ws_iwire_feed
  * @see ws_iwire::new_fragment
  * @see ws_iwire::reqm
  */
-int ws_iwire_mask ( const struct ws_iwire * stream );
+int ws_iwire_masked ( const struct ws_iwire * stream );
 
 /*!
  * @brief Check if the current frame is the message's last fragment.

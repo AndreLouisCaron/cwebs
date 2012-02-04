@@ -99,7 +99,7 @@ namespace {
                 myBackend << "pong";
             }
             myBackend
-                << ',' << (::ws_iwire_mask(&wire)?'m':'p')
+                << ',' << (::ws_iwire_masked(&wire)?'m':'p')
                 << ',' << size
                 ;
         }
