@@ -359,14 +359,14 @@ static uint64 _ws_parse_data_2
 {
     uint64 used = 0;
     uint8 bufdata[256];
-    uint8 bufsize = 0;
+    size_t bufsize = 0;
     // don't smear across frame boundaries.
     size = MIN(stream->pass, size);
     // start parsing data.
     while ( used < size )
     {
         // copy butes to buffer and un-mask.
-        for ( bufsize = 0; (bufsize < size); ++bufsize ) {
+        for ( bufsize = 0; ((used < size) && (bufsize < 256)); ++bufsize ) {
             bufdata[bufsize] = data[used++] ^ stream->mask[stream->used++%4];
         }
         // pass data to stream owner.

@@ -137,6 +137,7 @@ static uint64 _ws_body_1
     // prepare for next frame.
     if ( stream->pass == 0 )
     {
+        stream->used = 0;
     }
     return (size);
 }
@@ -156,7 +157,7 @@ static uint64 _ws_body_2
 {
     uint64 used = 0;
     uint8 bufdata[256];
-    uint8 bufsize = 0;
+    size_t bufsize = 0;
     // don't smear across frame boundaries.
     size = MIN(stream->pass, size);
     // start parsing data.
@@ -164,7 +165,7 @@ static uint64 _ws_body_2
     {
         // copy butes to buffer and un-mask.
         const uint8 *const mask = stream->data+10;
-        for ( bufsize = 0; (bufsize < size); ++bufsize ) {
+        for ( bufsize = 0; ((used < size) && (bufsize < 256)); ++bufsize ) {
             bufdata[bufsize] = data[used++] ^ mask[stream->used++%4];
         }
         // pass data to stream owner.
@@ -175,6 +176,7 @@ static uint64 _ws_body_2
     // prepare for next frame.
     if ( stream->pass == 0 )
     {
+        stream->used = 0;
     }
     return (used);
 }
@@ -221,6 +223,9 @@ static void ws_owire_put_full
           ws_owire_last(stream);
           ws_owire_eval(stream, 0);
           ws_owire_code(stream, code);
+          if ( stream->auto_mask ) {
+              ws_owire_mask(stream);
+          }
           _ws_mask(stream);
           _ws_head(stream);
           _ws_body(stream, data, size);
@@ -271,6 +276,7 @@ void ws_owire_new_message ( struct ws_owire * stream )
     memset(stream->data, 0, 14);
     stream->state = &_ws_fail;
     stream->pass = 0;
+    stream->used = 0;
 }
 
 void ws_owire_end_message ( struct ws_owire * stream )
@@ -278,6 +284,7 @@ void ws_owire_end_message ( struct ws_owire * stream )
     memset(stream->data, 0, 14);
     stream->state = &_ws_fail;
     stream->pass = 0;
+    stream->used = 0;
 }
 
 void ws_owire_new_frame ( struct ws_owire * stream, uint64 size )
