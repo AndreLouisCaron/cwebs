@@ -165,6 +165,12 @@ static uint64 _ws_parse_size_1
         stream->unmask_payload = ((byte & 0x80) != 0);
         stream->buffer[0] = ((byte & 0x7f) >> 0);
         stream->stored = 1;
+        // reject unmasked frames if masking is required by the host.
+        if (stream->masking_required && !stream->unmask_payload)
+        {
+            stream->status = ws_iwire_masking_required;
+            return (used);
+        }
         // parse extended size, if necessary.
         if ( stream->buffer[0] == 126 ) {
             stream->stored = 0;
@@ -435,6 +441,7 @@ void ws_iwire_init ( struct ws_iwire * stream )
     stream->new_fragment = 0;
     stream->end_fragment = 0;
     stream->accept_content = 0;
+    stream->masking_required = 0;
     stream->extension_mask = 0;
     stream->extension_code = 0;
     stream->unmask_payload = 0;

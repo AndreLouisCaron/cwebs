@@ -68,6 +68,11 @@ typedef enum ws_iwire_status
      */
    ws_iwire_message_type_changed,
 
+    /*!
+     * @brief Masking is required but an unmasked frame was received.
+     */
+    ws_iwire_masking_required,
+
 } ws_iwire_status;
 
 struct ws_iwire;
@@ -216,6 +221,12 @@ struct ws_iwire
      * extensions.
      */
     uint8 extension_mask;
+
+    /*!
+     * @public
+     * @brief Tells the parse if it should reject unmasked frames.
+     */
+    int masking_required;
 
     /*!
      * @public
