@@ -65,7 +65,7 @@ static uint64 _ws_idle
     ( struct ws_iwire * stream, const uint8 * data, uint64 size )
 {
     // signal start of message.
-    stream->code = 0;
+    stream->message_type = 0;
     if ( stream->new_message ) {
         stream->new_message(stream);
     }
@@ -88,7 +88,7 @@ static void _ws_done ( struct ws_iwire * stream )
         if ( stream->end_message ) {
 	    stream->end_message(stream);
 	}
-        stream->code = 0;
+        stream->message_type = 0;
         stream->state = &_ws_idle;
     }
 }
@@ -102,7 +102,7 @@ static uint64 _ws_wait
     ( struct ws_iwire * stream, const uint8 * data, uint64 size )
 {
     uint64 used = 0;
-    uint8 code = 0;
+    uint8 message_type = 0;
     while ( used < size )
     {
         // fetch next byte.
@@ -110,7 +110,7 @@ static uint64 _ws_wait
         // parse fields.
         stream->last = ((byte & 0x80) != 0);
         stream->extension_code = ((byte & 0x70) >> 4);
-        code = ((byte & 0x0f) >> 0);
+        message_type = ((byte & 0x0f) >> 0);
         // check for invalid extension fields.
         if ((stream->extension_code & ~stream->extension_mask) != 0)
         {
@@ -119,16 +119,24 @@ static uint64 _ws_wait
         }
         // for fragmented messages, the opcode is set on the first
         // frame only and is required to be 0 on subsequent frames.
-        if ((stream->code != 0) && (code != 0))
+        if ((stream->message_type != 0) && (message_type != 0))
         {
             // don't be fussy unless peer sends a different opcode.
-            if ( stream->code != code )
+            if ( stream->message_type != message_type )
             {
                 // ...
             }
         }
-        if ( stream->code == 0 ) {
-            stream->code = code;
+        // if this is the first fragment, store the message type.
+        if ( stream->message_type == 0 )
+        {
+            // make sure the message type is supported.
+            if (!ws_known_message_type(message_type))
+            {
+                stream->status = ws_iwire_unknown_message_type;
+                return (used);
+            }
+            stream->message_type = message_type;
         }
         // done.  look at fragment size.
         stream->state = &_ws_parse_size_1; break;
@@ -408,6 +416,21 @@ static uint64 _ws_iwire_feed
     return (used);
 }
 
+int ws_known_message_type ( int type )
+{
+    switch (type)
+    {
+    case 0x1: // text.
+    case 0x2: // data.
+    case 0x8: // kill.
+    case 0x9: // ping.
+    case 0xa: // pong.
+        return 1;
+    default:
+        return 0;
+    }
+}
+
 void ws_iwire_init ( struct ws_iwire * stream )
 {
     stream->new_message = 0;
@@ -419,7 +442,7 @@ void ws_iwire_init ( struct ws_iwire * stream )
     stream->extension_code = 0;
     stream->usem = 0;
     stream->size = 0;
-    stream->code = 0;
+    stream->message_type = 0;
     stream->good = 1;
     stream->state = &_ws_idle;
     stream->status = ws_iwire_ok;
@@ -443,26 +466,26 @@ int ws_iwire_last ( const struct ws_iwire * stream )
 
 int ws_iwire_ping ( const struct ws_iwire * stream )
 {
-    return (stream->code == 0x09);
+    return (stream->message_type == 0x09);
 }
 
 int ws_iwire_pong ( const struct ws_iwire * stream )
 {
-    return (stream->code == 0x0a);
+    return (stream->message_type == 0x0a);
 }
 
 int ws_iwire_text ( const struct ws_iwire * stream )
 {
-    return (stream->code == 0x01);
+    return (stream->message_type == 0x01);
 }
 
 int ws_iwire_data ( const struct ws_iwire * stream )
 {
-    return (stream->code == 0x02);
+    return (stream->message_type == 0x02);
 }
 
 int ws_iwire_dead ( const struct ws_iwire * stream )
 {
-    return (stream->code == 0x08);
+    return (stream->message_type == 0x08);
 }
 

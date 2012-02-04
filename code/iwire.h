@@ -40,6 +40,12 @@
 extern "C" {
 #endif
 
+/*!
+ * @brief Checks that a supplied message type is valid.
+ * @return 1 if the message type is valid, else 0.
+ */
+int ws_known_message_type ( int type );
+
 typedef enum ws_iwire_status
 {
     /*!
@@ -51,6 +57,11 @@ typedef enum ws_iwire_status
      * @brief An invalid extension field was detected.
      */
     ws_iwire_invalid_extension,
+
+    /*!
+     * @brief A frame containing an unkonwn message type was detected.
+     */
+    ws_iwire_unknown_message_type,
 
 } ws_iwire_status;
 
@@ -215,9 +226,9 @@ struct ws_iwire
     /*!
      * @internal
      * @private
-     * @brief Current frame's opcode.
+     * @brief Current message's type.
      */
-    int code;
+    int message_type;
 
     /*!
      * @internal

@@ -26,8 +26,8 @@
 
 /*!
  * @internal
- * @file test/invalid-extension.cpp
- * @brief Tests error reporting for frames containing invalid extension codes.
+ * @file test/unknown-message-type.cpp
+ * @brief Tests error reporting for frames containing unknown message types.
  */
 
 #include "unit-test.hpp"
@@ -37,33 +37,28 @@ namespace {
     int test ( int argc, char ** argv )
     {
         // try out all possible combinations of extension codes and masks.
-        for (uint8 mask=0; mask < 8; ++mask)
+        for (uint8 type=0; type < 16; ++type)
         {
-            for (uint8 code=0; code < 8; ++code)
+            // get a fresh parser.
+            ::ws_iwire wire;
+            ::ws_iwire_init(&wire);
+
+            // feed the first byte of a message header.
+            uint8 head = 0x80|type;
+            ::ws_iwire_feed(&wire, &head, 1);
+
+            // check that an error is triggered when we expect one.
+            bool expect = (::ws_known_message_type(type) == 0);
+            bool result = (wire.status == ws_iwire_unknown_message_type);
+            if (expect != result)
             {
-                // get a fresh parser.
-                ::ws_iwire wire;
-                ::ws_iwire_init(&wire);
-                wire.extension_mask = mask;
-
-                // feed the first byte of a message header.
-                uint8 head = 0x80|(code<<4)|0x01;
-                ::ws_iwire_feed(&wire, &head, 1);
-
-                // check that an error is triggered when we expect one.
-                bool expect = ((code & ~mask) != 0);
-                bool result = (wire.status == ws_iwire_invalid_extension);
-                if (expect != result)
-                {
-                    // show which combination failed.
-                    std::cerr
-                        << "mask: " << int(mask) << std::endl
-                        << "code: " << int(code) << std::endl
-                        << "expect: " << expect << std::endl
-                        << "result: " << result << std::endl
-                        ;
-                    return (FAIL);
-                }
+                // show which combination failed.
+                std::cerr
+                    << "type: " << int(type) << std::endl
+                    << "expect: " << expect << std::endl
+                    << "result: " << result << std::endl
+                    ;
+                return (FAIL);
             }
         }
 
