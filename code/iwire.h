@@ -81,16 +81,16 @@ struct ws_iwire;
  * state in @a wire.  When they finished execution, they express state
  * transition by assigning a new state to @c wire->state.
  *
- * @see ws_iwire::state
+ * @see ws_iwire::handler
  */
-typedef uint64(*ws_iwire_state)
+typedef uint64(*ws_iwire_handler)
     (struct ws_iwire * wire, const uint8 * data, uint64 size);
 
 /*!
  * @brief Incremental parser for WebSocket wire protocol (in-bound).
  *
  * @see ws_owire
- * @see ws_iwire_state
+ * @see ws_iwire_handler
  * @see http://tools.ietf.org/html/rfc6455
  *
  * @bug The current parser implementation cannot handle control messages
@@ -268,7 +268,7 @@ struct ws_iwire
      * This function reference is changed at state handlers to make the
      * transition to another state.
      */
-    ws_iwire_state state;
+    ws_iwire_handler handler;
 
     /*!
      * @internal

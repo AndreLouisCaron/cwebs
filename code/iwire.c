@@ -69,7 +69,7 @@ static uint64 _ws_idle
     if ( stream->new_message ) {
         stream->new_message(stream);
     }
-    stream->state = &_ws_wait;
+    stream->handler = &_ws_wait;
     return (0);
 }
 
@@ -82,14 +82,14 @@ static void _ws_done ( struct ws_iwire * stream )
     if ( stream->end_fragment ) {
         stream->end_fragment(stream);
     }
-    stream->state = &_ws_wait;
+    stream->handler = &_ws_wait;
     if ( stream->last )
     {
         if ( stream->end_message ) {
 	    stream->end_message(stream);
 	}
         stream->message_type = 0;
-        stream->state = &_ws_idle;
+        stream->handler = &_ws_idle;
     }
 }
 
@@ -139,7 +139,7 @@ static uint64 _ws_wait
             stream->message_type = message_type;
         }
         // done.  look at fragment size.
-        stream->state = &_ws_parse_size_1; break;
+        stream->handler = &_ws_parse_size_1; break;
     }
     return (used);
 }
@@ -171,11 +171,11 @@ static uint64 _ws_parse_size_1
         // parse extended size, if necessary.
         if ( stream->data[0] == 126 ) {
             stream->size = 0;
-            stream->state = &_ws_parse_size_2; break;
+            stream->handler = &_ws_parse_size_2; break;
         }
         if ( stream->data[0] == 127 ) {
             stream->size = 0;
-            stream->state = &_ws_parse_size_3; break;
+            stream->handler = &_ws_parse_size_3; break;
         }
         // commit size.	
 	stream->pass = stream->data[0];
@@ -184,7 +184,7 @@ static uint64 _ws_parse_size_1
         }
         stream->size = 0;
         // start parsing mask.
-        stream->state = &_ws_parse_mask; break;
+        stream->handler = &_ws_parse_mask; break;
     }
     return (used);
 }
@@ -218,7 +218,7 @@ static uint64 _ws_parse_size_2
             }
             stream->size = 0;
             // start parsing mask.
-            stream->state = &_ws_parse_mask; break;
+            stream->handler = &_ws_parse_mask; break;
         }
     }
     return (used);
@@ -261,7 +261,7 @@ static uint64 _ws_parse_size_3
 	    }
             stream->size = 0;
             // start parsing mask.
-            stream->state = &_ws_parse_mask; break;
+            stream->handler = &_ws_parse_mask; break;
         }
     }
     return (used);
@@ -286,7 +286,7 @@ static uint64 _ws_parse_mask
     if ( !stream->usem )
     {
         stream->used = 0;
-        stream->state = &_ws_parse_data;
+        stream->handler = &_ws_parse_data;
         // fast-track to next message (see comment above).
         if ( stream->pass == 0 ) {
             return (_ws_parse_data(stream, data+used, size-used));
@@ -310,7 +310,7 @@ static uint64 _ws_parse_mask
             stream->size = 0;
             // start parsing data.
             stream->used = 0;
-            stream->state = &_ws_parse_data; break;
+            stream->handler = &_ws_parse_data; break;
         }
     }
     // fast-track to next message (see comment above).
@@ -410,7 +410,7 @@ static uint64 _ws_iwire_feed
         // Note: invoking the state handler might move the parser to a new
         //   state.  In the end, all data will be consumed by one state or
         //   the other.
-        used += (*stream->state)(stream, data+used, size-used);
+        used += (*stream->handler)(stream, data+used, size-used);
     }
     while ((used < size) && (stream->status == ws_iwire_ok));
     return (used);
@@ -444,7 +444,7 @@ void ws_iwire_init ( struct ws_iwire * stream )
     stream->size = 0;
     stream->message_type = 0;
     stream->good = 1;
-    stream->state = &_ws_idle;
+    stream->handler = &_ws_idle;
     stream->status = ws_iwire_ok;
 }
 
