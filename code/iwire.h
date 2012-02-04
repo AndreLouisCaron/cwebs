@@ -62,6 +62,11 @@ typedef enum ws_iwire_status
      * @brief A frame containing an unkonwn message type was detected.
      */
     ws_iwire_unknown_message_type,
+ 
+    /*!
+     * @brief A fragmented message changed message types between frames.
+     */
+   ws_iwire_message_type_changed,
 
 } ws_iwire_status;
 

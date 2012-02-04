@@ -35,11 +35,13 @@ endmacro()
 # compile the test program(s).
 add_test_program(invalid-extension)
 add_test_program(unknown-message-type)
+add_test_program(message-type-change)
 add_test_program(summarize-messages)
 
 # self-contained tests.
 add_test(invalid-extension invalid-extension)
 add_test(unknown-message-type unknown-message-type)
+add_test(message-type-change message-type-change)
 
 # shortcut for invoking 'summarize-messages' and checking outputs.
 macro(check_summary name input)

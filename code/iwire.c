@@ -121,11 +121,8 @@ static uint64 _ws_wait
         // frame only and is required to be 0 on subsequent frames.
         if ((stream->message_type != 0) && (message_type != 0))
         {
-            // don't be fussy unless peer sends a different opcode.
-            if ( stream->message_type != message_type )
-            {
-                // ...
-            }
+            stream->status = ws_iwire_message_type_changed;
+            return (used);
         }
         // if this is the first fragment, store the message type.
         if ( stream->message_type == 0 )
