@@ -43,7 +43,7 @@ namespace win {
         : Tunnel(host, peer)
     {
         // Client *must* mask all frames.
-        //myIWire.reqm = 1;
+        myIWire.masking_required = 1;
     }
 
     void Server::handshake ( const std::string& host )

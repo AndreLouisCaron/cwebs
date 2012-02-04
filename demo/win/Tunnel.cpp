@@ -33,6 +33,7 @@
 #include "Digest.hpp"
 
 #include <ctime>
+#include <iostream>
 
 namespace win {
 
@@ -112,6 +113,31 @@ namespace win {
         for ( int size = 0; ((size=myPeer.get(data, sizeof(data))) > 0); )
         {
             ::ws_iwire_feed(&myIWire, data, size);
+            if (myIWire.status != ::ws_iwire_ok)
+            {
+                std::cerr
+                    << "WebSocket parser error: '";
+                if (myIWire.status == ws_iwire_invalid_extension)
+                {
+                    std::cerr << "invalid extension";
+                }
+                if (myIWire.status == ws_iwire_unknown_message_type)
+                {
+                    std::cerr << "unknown message type";
+                }
+                if (myIWire.status == ws_iwire_message_type_changed)
+                {
+                    std::cerr << "message type changed";
+                }
+                if (myIWire.status == ws_iwire_masking_required)
+                {
+                    std::cerr << "masking required";
+                }
+                std::cerr
+                    << "'."
+                    << std::endl;
+                break;
+            }
         }
 
         // Let peer know we're not expecting any more data.

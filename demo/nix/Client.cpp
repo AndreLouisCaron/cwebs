@@ -44,6 +44,8 @@ namespace nix {
     Client::Client ( nix::File& host, nix::net::Stream& peer )
         : Tunnel(host, peer)
     {
+        // Client *must* mask all frames.
+        myOWire.auto_mask = 1;
     }
 
     void Client::handshake ( const std::string& host )
