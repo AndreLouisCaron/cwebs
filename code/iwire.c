@@ -83,7 +83,7 @@ static void _ws_done ( struct ws_iwire * stream )
         stream->end_fragment(stream);
     }
     stream->handler = &_ws_wait;
-    if ( stream->last )
+    if ( stream->last_fragment )
     {
         if ( stream->end_message ) {
 	    stream->end_message(stream);
@@ -108,7 +108,7 @@ static uint64 _ws_wait
         // fetch next byte.
         const uint8 byte = data[used++];
         // parse fields.
-        stream->last = ((byte & 0x80) != 0);
+        stream->last_fragment = ((byte & 0x80) != 0);
         stream->extension_code = ((byte & 0x70) >> 4);
         message_type = ((byte & 0x0f) >> 0);
         // check for invalid extension fields.
@@ -458,9 +458,9 @@ int ws_iwire_mask ( const struct ws_iwire * stream )
     return (stream->usem);
 }
 
-int ws_iwire_last ( const struct ws_iwire * stream )
+int ws_iwire_last_fragment ( const struct ws_iwire * stream )
 {
-    return (stream->last);
+    return (stream->last_fragment);
 }
 
 int ws_iwire_ping ( const struct ws_iwire * stream )

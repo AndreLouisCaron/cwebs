@@ -141,12 +141,13 @@ struct ws_iwire
      * This call will be followed by zero or more calls to @c accept_content(),
      * which will then be followed by a call to @c end_fragment().
      *
-     * @note If the message is fragmented (@c ws_iwire_last(wire)==0), then the
-     *  total size of the message is unavailable.  The WebSocket specification
-     *  thus allows messages of unlimited size.
+     * @note If the message is fragmented
+     *  (@c ws_iwire_last_fragment(wire)==0), then the total size of the
+     *  message is unavailable.  The WebSocket specification thus allows
+     *  messages of unlimited size.
      *
      * @see baton
-     * @see ws_iwire_last
+     * @see ws_iwire_last_fragment
      * @see ws_iwire_mask
      * @see ws_iwire_ping
      * @see ws_iwire_pong
@@ -242,7 +243,7 @@ struct ws_iwire
      * @private
      * @brief 1 if the current frame ends the message, else 0.
      */
-    int last;
+    int last_fragment;
 
     /*!
      * @internal
@@ -368,7 +369,7 @@ int ws_iwire_mask ( const struct ws_iwire * stream );
  *
  * @see ws_iwire::new_fragment
  */
-int ws_iwire_last ( const struct ws_iwire * stream );
+int ws_iwire_last_fragment ( const struct ws_iwire * stream );
 
 /*!
  * @brief Check if the current frame is a ping message.

@@ -109,7 +109,7 @@ namespace {
             myBackend
                 << ',' << (std::string)myDigest.result()
                 << ')';
-            if (!::ws_iwire_last(&wire)) {
+            if (!::ws_iwire_last_fragment(&wire)) {
                 myBackend << std::endl;
             }
         }
