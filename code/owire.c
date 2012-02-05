@@ -55,46 +55,6 @@ static void _ws_unsafe_random_mask ( struct ws_owire * stream, uint8 mask[4] )
 
 /*!
  * @internal
- * @brief Generated frame mask using custom generator, if required.
- * @param stream Current writer state.
- */
-static void _ws_mask ( struct ws_owire * stream )
-{
-    if ( (stream->data[1]&0x80) != 0 ) {
-        stream->rand(stream, stream->data+10);
-    }
-}
-
-/*!
- * @internal
- * @brief Pack frame header and forward it to the application for transfer.
- * @param stream Current writer state.
- */
-static void _ws_head ( struct ws_owire * stream )
-{
-    const uint8 size = (stream->data[1] & 0x7f);
-    const uint8 usem = (stream->data[1] & 0x80);
-    // compute prefix size.
-    uint8 used = 0;
-    if ( size < 126 ) {
-        used = 2;
-    }
-    if ( size == 126 ) {
-        used = 4;
-    }
-    if ( size == 127 ) {
-        used = 10;
-    }
-    // pack header by moving mask.
-    if ( usem && (size < 127) ) {
-        memcpy(stream->data+used, stream->data+10, 4), used += 4;
-    }
-    // send packed header.
-    stream->accept_content(stream, stream->data, used);
-}
-
-/*!
- * @internal
  * @brief Default writer state.  Emits a writer error if called.
  * @param stream Current writer state.
  * @param data Ignored, used to comply with writer handler signature.
@@ -110,7 +70,7 @@ static void _ws_head ( struct ws_owire * stream )
 static uint64 _ws_fail
     ( struct ws_owire * stream, const uint8 * data, uint64 size )
 {
-    stream->error = ws_owire_enotready;
+    stream->status = ws_owire_not_ready;
     return (0);
 }
 
@@ -138,6 +98,7 @@ static uint64 _ws_body_1
     if ( stream->pass == 0 )
     {
         stream->used = 0;
+        stream->handler = &_ws_fail;
     }
     return (size);
 }
@@ -164,9 +125,8 @@ static uint64 _ws_body_2
     while ( used < size )
     {
         // copy butes to buffer and un-mask.
-        const uint8 *const mask = stream->data+10;
         for ( bufsize = 0; ((used < size) && (bufsize < 256)); ++bufsize ) {
-            bufdata[bufsize] = data[used++] ^ mask[stream->used++%4];
+            bufdata[bufsize] = data[used++] ^ stream->mask[stream->used++%4];
         }
         // pass data to stream owner.
         stream->accept_content(stream, bufdata, bufsize);
@@ -177,26 +137,9 @@ static uint64 _ws_body_2
     if ( stream->pass == 0 )
     {
         stream->used = 0;
+        stream->handler = &_ws_fail;
     }
     return (used);
-}
-
-/*!
- * @internal
- * @brief Process and forward frame payload, masking if necessary.
- * @param stream Current writer state.
- * @param data Data to be written.
- * @param size Number of bytes to write.
- *
- * @see _ws_body_1
- * @see _ws_body_2
- */
-static uint64 _ws_body
-    ( struct ws_owire * stream, const uint8 * data, uint64 size )
-{
-    return (((stream->data[1] & 0x80)==0)?
-        _ws_body_1(stream, data, size) :
-        _ws_body_2(stream, data, size));
 }
 
 /*!
@@ -211,53 +154,32 @@ static uint64 _ws_body
  *  control frames (ping, pong and close) must not be fragmented (see RFC6455,
  *  section 5.4).
  */
-static void ws_owire_put_full
-    ( struct ws_owire * stream, const uint8 * data, uint64 size, uint8 code )
+static void ws_owire_put_full ( struct ws_owire * stream, ws_type type,
+                                const uint8 * data, uint64 size, int extension )
 {
     uint64 used = 0;
     uint64 part = 0;
-    ws_owire_new_message(stream);
+    int last = 0;
     if ((stream->auto_fragment == 0) || (size == 0))
     {
-        ws_owire_new_frame(stream, size);
-          ws_owire_last(stream);
-          ws_owire_eval(stream, 0);
-          ws_owire_code(stream, code);
-          if ( stream->auto_mask ) {
-              ws_owire_mask(stream);
-          }
-          _ws_mask(stream);
-          _ws_head(stream);
-          _ws_body(stream, data, size);
+        ws_owire_new_frame(stream, type, size, 1, extension);
+        stream->handler(stream, data, size);
         ws_owire_end_frame(stream);
     }
     else
     {
-        while ( used < size )
-        {
+        do {
             part = MIN(size-used, stream->auto_fragment);
-            ws_owire_new_frame(stream, part);
-            {
-                if ( (used+part) >= size ) {
-                    ws_owire_last(stream);
-                }
-                ws_owire_eval(stream, 0);
-                if ( used == 0 ) {
-                    ws_owire_code(stream, code);
-                } else {
-                    ws_owire_code(stream, 0);
-                }
-                if ( stream->auto_mask ) {
-                    ws_owire_mask(stream);
-                }
-                _ws_mask(stream);
-                _ws_head(stream);
-                used += _ws_body(stream, data+used, part);
-            }
+            last = ((used+part) < size);
+            ws_owire_new_frame(stream, type, size, last, extension);
+            stream->handler(stream, data+used, part), used += part;
             ws_owire_end_frame(stream);
+
+            // make sure all but the first fragment have a null message type.
+            type = ws_same;
         }
+        while (used < size);
     }
-    ws_owire_end_message(stream);
 }
 
 void ws_owire_init ( struct ws_owire * stream )
@@ -266,125 +188,111 @@ void ws_owire_init ( struct ws_owire * stream )
     stream->rand = &_ws_unsafe_random_mask;
     stream->baton = 0;
     stream->auto_fragment = 0;
-    stream->auto_mask = 0;
-    stream->state = &_ws_fail;
+    stream->mask_payload = 0;
+    stream->handler = &_ws_fail;
     stream->pass = 0;
 }
 
-void ws_owire_new_message ( struct ws_owire * stream )
+void ws_owire_new_frame ( struct ws_owire * stream, ws_type type, uint64 size,
+                          int last, int extension )
 {
-    memset(stream->data, 0, 14);
-    stream->state = &_ws_fail;
-    stream->pass = 0;
-    stream->used = 0;
-}
-
-void ws_owire_end_message ( struct ws_owire * stream )
-{
-    memset(stream->data, 0, 14);
-    stream->state = &_ws_fail;
-    stream->pass = 0;
-    stream->used = 0;
-}
-
-void ws_owire_new_frame ( struct ws_owire * stream, uint64 size )
-{
-    memset(stream->data, 0, 14);
-    stream->state = &_ws_fail;
-    stream->pass = size;
+    unsigned char data[14] = { 0 };
+    uint64 used;
+    // store the end-of-message flag, the extension code and the message type.
+    used = 2;
+    if (last) {
+        data[0] |= 0x80;
+    }
+    data[0] |= ((extension & 0x07) << 4);
+    data[0] |= ((int)type) & 0x0f;
+    // store the frame size.
     if ( size < 126 )
     {
-        stream->data[1] &= 0x7f;
-        stream->data[1] |= size;
+        data[1] |= size;
     }
     else if ( size < 65537 )
     {
-        stream->data[1] &= 0x7f;
-        stream->data[1] |= 126;
-        stream->data[2] = ((size >> 8) & 0xff);
-        stream->data[3] = ((size >> 0) & 0xff);
+        data[1] |= 126;
+        data[2] = ((size >> 8) & 0xff);
+        data[3] = ((size >> 0) & 0xff);
+        used += 2;
     }
     else
     {
-        stream->data[1] &= 0x7f;
-        stream->data[1] |= 127;
-        stream->data[2] = ((size >> 56) & 0xff);
-        stream->data[3] = ((size >> 48) & 0xff);
-        stream->data[4] = ((size >> 40) & 0xff);
-        stream->data[5] = ((size >> 32) & 0xff);
-        stream->data[6] = ((size >> 24) & 0xff);
-        stream->data[7] = ((size >> 16) & 0xff);
-        stream->data[8] = ((size >>  8) & 0xff);
-        stream->data[9] = ((size >>  0) & 0xff);
+        data[1] |= 127;
+        data[2] = ((size >> 56) & 0xff);
+        data[3] = ((size >> 48) & 0xff);
+        data[4] = ((size >> 40) & 0xff);
+        data[5] = ((size >> 32) & 0xff);
+        data[6] = ((size >> 24) & 0xff);
+        data[7] = ((size >> 16) & 0xff);
+        data[8] = ((size >>  8) & 0xff);
+        data[9] = ((size >>  0) & 0xff);
+        used += 8;
     }
+    // generate mask if necessary.
+    if (stream->mask_payload) {
+        data[1] |= 0x80;
+        stream->rand(stream, stream->mask);
+        memcpy(stream->mask, data+used, 4);
+        used += 4;
+        stream->handler = &_ws_body_2;
+    }
+    else {
+        stream->handler = &_ws_body_1;
+    }
+    // transfer the frame header.
+    if (stream->accept_content) {
+        stream->accept_content(stream, data, used);
+    }
+    // keep track of how much data is left to send.
+    stream->pass = size;
 }
 
 void ws_owire_end_frame ( struct ws_owire * stream )
 {
-    memset(stream->data, 0, 14);
-    stream->state = &_ws_fail;
+    stream->handler = &_ws_fail;
     stream->pass = 0;
-}
-
-void ws_owire_last ( struct ws_owire * stream )
-{
-    // set bit 8.
-    stream->data[0] |= 0x80;
-}
-
-void ws_owire_eval ( struct ws_owire * stream, uint8 eval )
-{
-    // clear, then set bits 5-7.
-    stream->data[0] &= 0xf1;
-    stream->data[0] |= ((eval & 0x07) << 4);
-}
-
-void ws_owire_code ( struct ws_owire * stream, uint8 code )
-{
-    // clear, then set bits 5-7.
-    stream->data[0] &= 0xf0;
-    stream->data[0] |= (code & 0x0f);
-}
-
-void ws_owire_mask ( struct ws_owire * stream )
-{
-    // set bit 8.
-    stream->data[1] |= 0x80;
 }
 
 uint64 ws_owire_feed
     ( struct ws_owire * stream, const void * data, uint64 size )
 {
-    return (stream->state(stream, static_cast<const uint8*>(data), size));
+    return (stream->handler(stream, (const uint8*)data, size));
 }
 
-void ws_owire_put_text
-    ( struct ws_owire * stream, const void * data, uint64 size )
+void ws_owire_put_text ( struct ws_owire * stream,
+                         const void * data, uint64 size, int extension )
 {
-    ws_owire_put_full(stream, static_cast<const uint8*>(data), size, 0x01);
+    ws_owire_put_full
+        (stream, ws_text, (const uint8*)data, size, extension);
 }
 
-void ws_owire_put_data
-    ( struct ws_owire * stream, const void * data, uint64 size )
+void ws_owire_put_data ( struct ws_owire * stream,
+                         const void * data, uint64 size, int extension )
 {
-    ws_owire_put_full(stream, static_cast<const uint8*>(data), size, 0x02);
+    ws_owire_put_full
+        (stream, ws_data, (const uint8*)data, size, extension);
 }
 
-void ws_owire_put_kill
-    ( struct ws_owire * stream, const void * data, uint64 size )
+void ws_owire_put_kill ( struct ws_owire * stream,
+                         const void * data, uint64 size, int extension )
 {
-    ws_owire_put_full(stream, static_cast<const uint8*>(data), size, 0x08);
+    ws_owire_put_full
+        (stream, ws_kill, (const uint8*)data, size, extension);
 }
 
-void ws_owire_put_ping
-    ( struct ws_owire * stream, const void * data, uint64 size )
+void ws_owire_put_ping ( struct ws_owire * stream,
+                         const void * data, uint64 size, int extension )
 {
-    ws_owire_put_full(stream, static_cast<const uint8*>(data), size, 0x09);
+    ws_owire_put_full
+        (stream, ws_ping, (const uint8*)data, size, extension);
 }
 
-void ws_owire_put_pong
-    ( struct ws_owire * stream, const void * data, uint64 size )
+void ws_owire_put_pong ( struct ws_owire * stream,
+                         const void * data, uint64 size, int extension )
 {
-    ws_owire_put_full(stream, static_cast<const uint8*>(data), size, 0x0a);
+    ws_owire_put_full
+        (stream, ws_pong, (const uint8*)data, size, extension);
 }
 

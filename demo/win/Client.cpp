@@ -43,7 +43,7 @@ namespace win {
         : Tunnel(host, peer)
     {
         // Client *must* mask all frames.
-        myOWire.auto_mask = 1;
+        myOWire.mask_payload = 1;
     }
 
     void Client::handshake ( const std::string& host )

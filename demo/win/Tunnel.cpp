@@ -86,16 +86,16 @@ namespace win {
     void Tunnel::foreground ()
     {
         // Tools for synchronous transfer.
-        char data[1024];
+        char data[4*1024];
 
         // Tunnel all host input through the connection.
         for ( int size = 0; ((size=myHostI.get(data, sizeof(data))) > 0); )
         {
-            ::ws_owire_put_data(&myOWire, data, size);
+            ::ws_owire_put_data(&myOWire, data, size, 0);
         }
 
         // Let the peer know we won't be sending any more data.
-        ::ws_owire_put_kill(&myOWire, 0, 0);
+        ::ws_owire_put_kill(&myOWire, 0, 0, 0);
         myPeer.shutdowno();
     }
 

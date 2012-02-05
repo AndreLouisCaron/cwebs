@@ -97,12 +97,12 @@ namespace nix {
             {
                 const ssize_t size = myHost.get(data, sizeof(data));
                 if ( size == 0 ) {
-                    ::ws_owire_put_kill(&myOWire, 0, 0);
+                    ::ws_owire_put_kill(&myOWire, 0, 0, 0);
                     myPeer.shutdowno();
                     halive = false;
                 }
                 else {
-                    ::ws_owire_put_data(&myOWire, data, size);
+                    ::ws_owire_put_data(&myOWire, data, size, 0);
                 }
             }
 
