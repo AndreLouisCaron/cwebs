@@ -32,6 +32,7 @@
  */
 
 #include "iwire.h"
+#include <stddef.h>
 
 /*!
  * @internal

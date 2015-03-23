@@ -34,6 +34,7 @@
 
 #include <sys/fcntl.h>
 #include <string>
+#include <unistd.h>
 #include "Error.hpp"
 
 namespace nix {
@@ -65,7 +66,7 @@ namespace nix {
     public:
         ~File ()
         {
-            ::close(myHandle);
+            close(myHandle);
         }
 
         /* methods. */
@@ -77,7 +78,7 @@ namespace nix {
 
         ssize_t get ( void * data, size_t size )
         {
-            const ssize_t status = ::read(myHandle, data, size);
+            const ssize_t status = read(myHandle, data, size);
             if ( status < 0 ) {
                 throw (Error(errno));
             }

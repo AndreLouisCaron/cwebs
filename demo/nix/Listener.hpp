@@ -53,12 +53,12 @@ namespace nix { namespace net {
             int status = ::bind(
                 myHandle, address, sizeof(endpoint.data()));
             if ( status < 0 ) {
-                ::close(myHandle);
+                close(myHandle);
                 throw (Error(errno));
             }
             status = ::listen(myHandle, SOMAXCONN);
             if ( status < 0 ) {
-                ::close(myHandle);
+                close(myHandle);
                 throw (Error(errno));
             }
 	}
@@ -69,7 +69,7 @@ namespace nix { namespace net {
     public:
         ~Listener ()
         {
-            ::close(myHandle);
+            close(myHandle);
         }
 
         /* methods. */

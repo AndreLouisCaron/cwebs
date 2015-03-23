@@ -133,7 +133,9 @@ namespace nix {
         const int status = ::select(fail.size(), 0, 0, &fail.data(), 0);
         if ( status == -1 ) {
             std::cerr << "Select!" << std::endl;
+            return (false);
         }
+        return (true);
     }
 
 }

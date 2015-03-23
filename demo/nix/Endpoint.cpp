@@ -83,7 +83,7 @@ namespace nix { namespace net {
         ::memset(&data, 0, sizeof(data));
         data.sin_family = AF_INET;
         data.sin_addr.s_addr = INADDR_ANY;
-        data.sin_port = ::htons(port);
+        data.sin_port = htons(port);
         return (Endpoint(data));
     }
 
@@ -100,7 +100,7 @@ namespace nix { namespace net {
     Endpoint::Endpoint ( const ::sockaddr_in& data, uint16_t port )
     {
         ::memcpy(&myData, &data, sizeof(myData));
-        myData.sin_port = ::htons(port);
+        myData.sin_port = htons(port);
     }
 
     std::ostream& operator<<
@@ -112,7 +112,7 @@ namespace nix { namespace net {
           << ((data.sin_addr.s_addr >>  8) & 0xff) << '.'
           << ((data.sin_addr.s_addr >> 16) & 0xff) << '.'
           << ((data.sin_addr.s_addr >> 24) & 0xff) << ':'
-          << ::ntohs(data.sin_port);
+          << ntohs(data.sin_port);
       return (stream);
     }
 

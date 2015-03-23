@@ -34,6 +34,7 @@
  */
 
 #include <string>
+#include <unistd.h>
 #include "Endpoint.hpp"
 #include "Error.hpp"
 #include "Listener.hpp"
@@ -59,7 +60,7 @@ namespace nix { namespace net {
             const int status = ::connect(
                 myHandle, address, sizeof(endpoint.data()));
             if ( status < 0 ) {
-                ::close(myHandle);
+                close(myHandle);
                 throw (Error(errno));
             }
         }
@@ -78,7 +79,7 @@ namespace nix { namespace net {
     public:
         ~Stream ()
         {
-            ::close(myHandle);
+            close(myHandle);
         }
 
         /* methods. */
